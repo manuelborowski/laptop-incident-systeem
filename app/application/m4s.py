@@ -120,7 +120,7 @@ class M4S:
                 "billingContact": app.config["M4S_BILLING_INFO"]
             }
             data["address"].update(app.config["M4S_ADDRESS_INFO"])
-            data["status"] = "draft" if m4s_test == "draft" else "new"
+            data["status"] = "draft" if m4s_test == "draft" else "nieuw"
             resp = requests.post(f"{url}/field-service/cases", headers=headers, data=json.dumps(data))
             if resp.status_code == 201:
                 resp = json.loads(resp.text)
