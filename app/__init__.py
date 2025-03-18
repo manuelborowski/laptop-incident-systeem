@@ -128,8 +128,9 @@ from functools import wraps
 # 0.85: bugfix cron, access to request outside app_context.  Changed info-field to unicidetext for long string.
 # 0.86: nieuw iso new
 # 0.87: made it possible to type the label of the laptop
+# 0.88: type label and serial of a laptop.  Updated m4s data.
 
-version = "0.87"
+version = "0.88"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

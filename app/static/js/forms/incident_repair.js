@@ -201,33 +201,34 @@ export class IncidentRepair {
         });
 
         // Scan owner laptop -> QR code
-        document.getElementById("laptop-code-scan").addEventListener("click", (e) => {
-            e.preventDefault();
-            bootbox.prompt({
-                title: "Scan de QR code van de laptop",
-                locale: "dutch",
-                callback: async res => {
-                    if (res !== null) {
-                        const label = qr_decode(res);
-                        const laptop_field = document.getElementById("laptop-field");
-                        laptop_field.innerHTML = "";
-                        laptop_field.add(new Option(label, label, true, true));
-                    }
-                }
-            })
-        });
+        // document.getElementById("laptop-code-scan").addEventListener("click", (e) => {
+        //     e.preventDefault();
+        //     bootbox.prompt({
+        //         title: "Scan de QR code van de laptop",
+        //         locale: "dutch",
+        //         callback: async res => {
+        //             if (res !== null) {
+        //                 const label = qr_decode(res);
+        //                 const laptop_field = document.getElementById("laptop-field");
+        //                 laptop_field.innerHTML = "";
+        //                 laptop_field.add(new Option(label, label, true, true));
+        //             }
+        //         }
+        //     })
+        // });
 
         // type owner laptop label
         document.getElementById("laptop-code-input").addEventListener("click", (e) => {
             e.preventDefault();
             bootbox.prompt({
-                title: "Type het label van de laptop",
+                title: "Typ het label van de laptop, schuine streep, serienummer.<br>bv: SPB2023-0234/LMT344FD",
                 locale: "dutch",
                 callback: async res => {
                     if (res !== null) {
                         const laptop_field = document.getElementById("laptop-field");
                         laptop_field.innerHTML = "";
-                        laptop_field.add(new Option(res, res, true, true));
+                        const [label, serial] = res.split("/");
+                        laptop_field.add(new Option(label, serial, true, true));
                     }
                 }
             })

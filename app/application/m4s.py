@@ -100,6 +100,7 @@ class M4S:
             [contact_first_name, contact_last_name] = [staff.voornaam, staff.naam] if staff else ["manuel", "borowski"]
             contact_email = f"{contact_first_name}.{contact_last_name}@campussintursula.be"
             data = {
+                "languageCode": "nl",
                 "truthStatement": True,
                 "serialNumber": incident.laptop_serial,
                 "institutionGuid": app.config["M4S_INSTITUTION_GUID"],
@@ -130,6 +131,7 @@ class M4S:
                 dl.incident.commit()
                 return True
             log.error(f'{sys._getframe().f_code.co_name}: post cases returned {resp.status_code}')
+            log.error(f'{sys._getframe().f_code.co_name}: error: {resp.text}')
             raise Exception(f"post cases returned {resp.status_code}")
         except Exception as e:
             log.error(f'{sys._getframe().f_code.co_name}: {e}')
