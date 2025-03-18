@@ -120,7 +120,7 @@ default_configuration_settings = {
     'lis-categories': ({}, Settings.SETTING_TYPE.E_YAML),
     'lis-home-locations': ({}, Settings.SETTING_TYPE.E_YAML),
 
-    'logging-inform-emails': ('', Settings.SETTING_TYPE.E_STRING),
+    'logging-inform-emails': ('', Settings.SETTING_TYPE.E_YAML),
 
     'm4s_bearer_token': ('', Settings.SETTING_TYPE.E_STRING),
     'm4s_bearer_expires_in': ('', Settings.SETTING_TYPE.E_STRING),

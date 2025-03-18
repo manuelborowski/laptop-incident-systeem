@@ -1024,8 +1024,7 @@ settings_formio = {
                   "input": true
                 },
                 {
-                  "label": "Logs met niveau ERROR worden verstuurd naar volgende adressen",
-                  "tooltip": "één adres per rij\nEen adres wordt niet gebruikt als er een # voor staat",
+                  "label": "Logs met niveau ERROR worden verstuurd naar volgende adressen (YAML)",
                   "autoExpand": false,
                   "tableView": true,
                   "key": "logging-inform-emails",

@@ -1,4 +1,4 @@
-__all__ = ["user", "socketio", "datatables", "common", "formio", "settings", "incident", "student", "cron", "staff", "spare", "lisbadge", "history", "models", "m4s", "attachment"]
+__all__ = ["user", "socketio", "datatables", "common", "formio", "settings", "incident", "student", "cron", "staff", "spare", "lisbadge", "history", "models", "m4s", "attachment", "log"]
 
 import app.application.user
 import app.application.socketio
@@ -15,6 +15,7 @@ import app.application.history
 import app.application.models
 import app.application.m4s
 import app.application.attachment
+import app.application.log
 
 from app.application.student import student_cron_load_from_sdh, student_cron_post_processing
 from app.application.staff import staff_cron_load_from_sdh, staff_cron_post_processing

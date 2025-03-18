@@ -129,8 +129,9 @@ from functools import wraps
 # 0.86: nieuw iso new
 # 0.87: made it possible to type the label of the laptop
 # 0.88: type label and serial of a laptop.  Updated m4s data.
+# 0.89: implemented FLUSH-TO-EMAIL
 
-version = "0.88"
+version = "0.89"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 
@@ -149,6 +150,34 @@ log_handler = logging.handlers.RotatingFileHandler(LOG_FILENAME, maxBytes=1024 *
 log_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s')
 log_handler.setFormatter(log_formatter)
 log.addHandler(log_handler)
+
+email_log_handler = None
+def subscribe_email_log_handler_cb(cb):
+    global email_log_handler
+    email_log_handler = cb
+
+
+# if the log-error-message is FLUSH-TO-EMAIL, all error logs are emailed and the buffer is cleared.
+class MyBufferingHandler(logging.handlers.BufferingHandler):
+    def flush(self):
+        if len(self.buffer) > 1:
+            message_body = ""
+            for b in self.buffer:
+                message_body += self.format(b) + "<br>"
+            with app.app_context():
+                if email_log_handler:
+                    email_log_handler(message_body)
+        self.buffer = []
+
+    def shouldFlush(self, record):
+        return record.msg == "FLUSH-TO-EMAIL"
+
+
+buf_handler = MyBufferingHandler(2)
+buf_handler.setLevel("ERROR")
+log.addHandler(buf_handler)
+buf_handler.setFormatter(log_formatter)
+
 
 log.info("START Laptop Incident Systeem")
 
