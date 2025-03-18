@@ -159,6 +159,7 @@ export class IncidentRepair {
             e.preventDefault();
             bootbox.prompt({
                 title: "Scan de LIS badge",
+                locale: "dutch",
                 callback: async res => {
                     if (res !== null) {
                         const [valid_code, code] = badge_raw2hex(res);
@@ -176,6 +177,7 @@ export class IncidentRepair {
             e.preventDefault();
             bootbox.prompt({
                 title: "Scan de badge van de eigenaar",
+                locale: "dutch",
                 callback: async res => {
                     if (res !== null) {
                         const [valid_code, code] = badge_raw2hex(res);
@@ -198,17 +200,34 @@ export class IncidentRepair {
             })
         });
 
-        // Scan laptop owner laptop -> QR code
+        // Scan owner laptop -> QR code
         document.getElementById("laptop-code-scan").addEventListener("click", (e) => {
             e.preventDefault();
             bootbox.prompt({
                 title: "Scan de QR code van de laptop",
+                locale: "dutch",
                 callback: async res => {
                     if (res !== null) {
                         const label = qr_decode(res);
                         const laptop_field = document.getElementById("laptop-field");
                         laptop_field.innerHTML = "";
                         laptop_field.add(new Option(label, label, true, true));
+                    }
+                }
+            })
+        });
+
+        // type owner laptop label
+        document.getElementById("laptop-code-input").addEventListener("click", (e) => {
+            e.preventDefault();
+            bootbox.prompt({
+                title: "Type het label van de laptop",
+                locale: "dutch",
+                callback: async res => {
+                    if (res !== null) {
+                        const laptop_field = document.getElementById("laptop-field");
+                        laptop_field.innerHTML = "";
+                        laptop_field.add(new Option(res, res, true, true));
                     }
                 }
             })
@@ -222,6 +241,7 @@ export class IncidentRepair {
             } else {
                 bootbox.prompt({
                     title: "Scan de badge van de reservelaptop",
+                    locale: "dutch",
                     callback: async res => {
                         if (res !== null) {
                             const [valid_code, code] = badge_raw2hex(res);

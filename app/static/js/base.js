@@ -102,6 +102,15 @@ export const base_init = ({button_menu_items = []}) => {
     }
 
     const button_menu = new ButtonMenu(document.querySelector(".button-menu-placeholder"), button_menu_items);
+
+    // used throughout all modules
+    const locale_dutch = {
+        OK: 'Ok',
+        CONFIRM: 'Bewaar',
+        CANCEL: 'Annuleer'
+    };
+    bootbox.addLocale('dutch', locale_dutch);
+
 }
 
 var logout_enabled = true;
@@ -114,7 +123,8 @@ if (logout && logout.to > 0) {
     const __reset_timer = () => {
         if (timeout_timer) clearTimeout(timeout_timer);
         timeout_timer = setTimeout(() => {
-            if (logout_enabled) window.location.href = Flask.url_for("auth.logout")}, logout.to * 1000
+            if (logout_enabled) window.location.href = Flask.url_for("auth.logout")
+        }, logout.to * 1000
         );
     }
     // Reset timer on user activity

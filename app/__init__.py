@@ -127,8 +127,9 @@ from functools import wraps
 # 0.84: token-login, disable browser autocomplete
 # 0.85: bugfix cron, access to request outside app_context.  Changed info-field to unicidetext for long string.
 # 0.86: nieuw iso new
+# 0.87: made it possible to type the label of the laptop
 
-version = "0.86"
+version = "0.87"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 
