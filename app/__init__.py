@@ -125,8 +125,9 @@ from functools import wraps
 # 0.82: new incident, M4S category field is default empty.
 # 0.83: update software incident, make sure M4S fields are not visible
 # 0.84: token-login, disable browser autocomplete
+# 0.85: bugfix cron, access to request outside app_context.  Changed info-field to unicidetext for long string.
 
-version = "0.84"
+version = "0.85"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

@@ -343,7 +343,7 @@ def incident_cron_state_timeout(opaque=None):
                 __check_timeout(incidents, key, timeout)
         dl.incident.commit()
         body_template = {"s": "1 incident staat te lang in dezelfde toestand", "m": "{nbr} incidenten staan te lang in dezelfde toestand"}
-        url = request.url_root
+        url = app.config["ROOT_URL"] if "ROOT_URL" in app.config else ""
         for key, incidents in timeout_locations.items():
             location = locations[key]
             if "email" in location:

@@ -2,7 +2,7 @@ __all__ = ["api", "auth", "user", "incident"]
 
 import json
 from flask_login import current_user
-from flask import session
+from flask import session, request
 from app import application as al, version
 
 #logging on file level
@@ -13,6 +13,8 @@ log.addFilter(MyLogFilter())
 
 @app.context_processor
 def inject_defaults():
+    url = request.url_root
+    app.config["ROOT_URL"] = url
     time_out = app.config["TOKEN_LOGIN_TO"] if "token-login" in session and session["token-login"] else 0 # 0 is no timeout
     return dict(version=f'@ 2025 MB. {version}', title=app.config['HTML_TITLE'], current_user=current_user, logout={"to": time_out})
 

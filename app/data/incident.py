@@ -1,6 +1,7 @@
 from email.policy import default
 from app import db
 from sqlalchemy_serializer import SerializerMixin
+from sqlalchemy import UnicodeText
 from app import data as dl
 
 #logging on file level
@@ -30,7 +31,7 @@ class Incident(db.Model, SerializerMixin):
     spare_laptop_name = db.Column(db.String(256), default="")
     spare_laptop_serial = db.Column(db.String(256), default="")
     charger = db.Column(db.Boolean, default=False)
-    info = db.Column(db.String(256), default=None)
+    info = db.Column(UnicodeText, default=None)
     incident_type = db.Column(db.String(256), default=None)
     incident_state = db.Column(db.String(256), default=None)
     home_location = db.Column(db.String(256), default=None)

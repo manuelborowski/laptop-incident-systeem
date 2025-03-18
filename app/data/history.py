@@ -1,5 +1,6 @@
 from app import db
 from sqlalchemy_serializer import SerializerMixin
+from sqlalchemy import UnicodeText
 from app import data as dl
 
 #logging on file level
@@ -17,7 +18,7 @@ class History(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     incident_id = db.Column(db.Integer)
     priority = db.Column(db.Integer, default=1)
-    info = db.Column(db.String(256), default=None)
+    info = db.Column(UnicodeText, default=None)
     incident_type = db.Column(db.String(256), default=None)
     incident_state = db.Column(db.String(256), default=None)
     current_location = db.Column(db.String(256), default=None)
