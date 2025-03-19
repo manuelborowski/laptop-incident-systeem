@@ -132,8 +132,9 @@ from functools import wraps
 # 0.89: implemented FLUSH-TO-EMAIL
 # 0.90: small bugfixes
 # 0.91: add spare history.  Add spare-laptop to incident history
+# 0.92: update info in "update-lis" email
 
-version = "0.91"
+version = "0.92"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

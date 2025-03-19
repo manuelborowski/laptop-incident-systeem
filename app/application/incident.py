@@ -41,8 +41,7 @@ def __send_incident_message_to_location(incident):
                     line = item["heading"]["m"].replace("{nbr}", str(nbr)) if nbr > 1 else item["heading"]["s"]
                     body += f"<b style=\"background-color:{states[item['state']]['color']}\"><u>{line}</u></b><br>"
                     for incident in state2incident[item["state"]]:
-                        line = (f'<a href="{url}incidentshow?id={incident.id}">&#x1F517;</a>(Tijd) {incident.time}, (Wie) {incident.current_incident_owner}, '
-                                f'(thuis) {locations[incident.home_location]["label"]}, (Type) {incident.incident_type}, (Info) {incident.info}')
+                        line = (f'<a href="{url}incidentshow?id={incident.id}">&#x1F517;</a>(Wie) {incident.laptop_owner_name}, (LIS id) {incident.lis_badge_id}')
                         body += f"{line}<br>"
                     body += "<br><br>"
             if body:
