@@ -53,7 +53,8 @@ def spare():
 def form():
     try:
         if request.method == "GET":
-            template = open(pathlib.Path("app/presentation/template/forms/spare.html")).read()
+            form = request.args.get('form')
+            template = open(pathlib.Path(f"app/presentation/template/forms/spare/{form}.html")).read()
             return {"template": template}
     except Exception as e:
         log.error(f'{sys._getframe().f_code.co_name}: Exception, {e}')
@@ -70,4 +71,3 @@ class Config(DatatableConfig):
         return dl.spare.pre_sql_search(search)
 
 config = Config("spare", "Reserve laptops")
-

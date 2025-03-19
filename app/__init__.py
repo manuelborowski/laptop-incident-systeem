@@ -131,8 +131,9 @@ from functools import wraps
 # 0.88: type label and serial of a laptop.  Updated m4s data.
 # 0.89: implemented FLUSH-TO-EMAIL
 # 0.90: small bugfixes
+# 0.91: add spare history.  Add spare-laptop to incident history
 
-version = "0.90"
+version = "0.91"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

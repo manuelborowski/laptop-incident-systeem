@@ -7,18 +7,35 @@
     </div>
     <div class="form-row" id="owner-row">
         <div class="form-element">
-            <label>Eigenaar<input id="owner-field" name="laptop_owner_name"></label>
+            <label>Eigenaar<input id="owner-field" name="laptop_owner_name" disabled></label>
         </div>
     </div>
     <div class="form-row">
         <div class="form-element">
-            <label>Laptop<input id="laptop-field" name="laptop_name" size="40"></label>
+            <label>Laptop<input id="laptop-field" name="laptop_name" size="40" disabled></label>
         </div>
     </div>
+    <div class="form-row">
+        <div class="form-element">
+            <label>Reserve laptop<input id="spare-field" name="spare_laptop_name" disabled></label>
+        </div>
+        <div class="form-element">
+            <label><input type="checkbox" id="spare-charger-chk" name="charger" disabled>Lader?</label>
+        </div>
+    </div>
+
     <div class="form-row">
         <div class="form-element">
             <table id="history-table">
-                <tr><th>Datum</th><th>Hersteller</th><th>Prio</th><th>Status</th><th>Locatie</th><th>Info</th><th>Type</th></tr>
+                <tr>
+                    <th>Datum</th>
+                    <th>Hersteller</th>
+                    <th>Prio</th>
+                    <th>Status</th>
+                    <th>Locatie</th>
+                    <th>Info</th>
+                    <th>Type</th>
+                </tr>
             </table>
         </div>
     </div>

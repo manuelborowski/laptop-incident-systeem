@@ -1,11 +1,11 @@
 import {datatables_init, datatable_row_data_from_id, datatable_reload_table} from "../datatables/dt.js";
 import {AlertPopup} from "../common/popup.js";
-import {fetch_update, fetch_post, fetch_get} from "../common/common.js";
+import {fetch_update, fetch_post, fetch_get, form_populate} from "../common/common.js";
 import {badge_raw2hex} from "../common/rfid.js";
 
 
 const __dialog_new_single_spare = async (default_id = null, default_auto_increment = false) => {
-    const form = await fetch_get("spare.form")
+    const form = await fetch_get("spare.form", {form: "spare"})
     if (form) {
         var new_spare = false;
         bootbox.dialog({
@@ -127,8 +127,49 @@ const __dialog_update_list = () => {
         onShown: function () {
         }
     });
-    popup[0].children[0].style.maxWidth="692px"
+    popup[0].children[0].style.maxWidth = "692px"
 }
+
+const __history_form = async (ids) => {
+    const form = await fetch_get("spare.form", {form: "history"});
+    if (form) {
+        bootbox.dialog({
+            title: "Incident historiek",
+            message: form.template,
+            buttons: {
+                cancel: {
+                    label: "Annuleer", className: "btn-secondary", callback: async () => {
+                    }
+                },
+            },
+            onShown: async () => {
+                const spares = await fetch_get("spare.spare", {filters: `id$=$${ids[0]}`});
+                if (spares && spares.length > 0) {
+                    const incidents_id = await fetch_get("incident.incident", {filters: `spare_laptop_name$=$${spares[0].id}`});
+                    const incidents_label = await fetch_get("incident.incident", {filters: `spare_laptop_name$=$${spares[0].label}`});
+                    const incidents = incidents_id.concat(incidents_label).sort((a, b) => b.id - a.id);
+
+                    const history_table = document.querySelector("#history-table");
+                    for (const incident of incidents) {
+                        let tr = "<tr>";
+                        for (const e of ["time", "laptop_owner_name", "id"]) {
+                            let val = incident[e];
+                            tr += `<td>${val}</td>`
+                        }
+                        tr += "</tr>";
+                        history_table.innerHTML += tr;
+                    }
+                    form_populate(spares[0]);
+                }
+            },
+        });
+    }
+}
+
+
+const context_menu_items = [
+    {type: "item", label: 'Historiek', iconscout: 'history', cb: __history_form},
+]
 
 const button_menu_items = [
     {
@@ -146,5 +187,5 @@ const button_menu_items = [
 ]
 
 $(document).ready(function () {
-    datatables_init({button_menu_items});
+    datatables_init({context_menu_items, button_menu_items});
 });
