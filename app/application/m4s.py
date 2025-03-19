@@ -9,7 +9,6 @@ log = logging.getLogger(f"{top_log_handle}.{__name__}")
 log.addFilter(MyLogFilter())
 
 class M4S:
-
     def init_bearer(self):
         try:
             self.bearer_token = dl.settings.get_configuration_setting("m4s_bearer_token")
@@ -173,7 +172,7 @@ def m4s_cron_get_problem_types(opaque=None):
                 type.delete()
                 nbr_delete += 1
         dl.m4s.commit()
-        log.error(f'{sys._getframe().f_code.co_name}: new/updated/deleted, {nbr_new}/{nbr_update}/{nbr_delete}')
+        log.info(f'{sys._getframe().f_code.co_name}: new/updated/deleted, {nbr_new}/{nbr_update}/{nbr_delete}')
     except Exception as e:
         log.error(f'{sys._getframe().f_code.co_name}: {e}')
 

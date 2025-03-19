@@ -130,8 +130,9 @@ from functools import wraps
 # 0.87: made it possible to type the label of the laptop
 # 0.88: type label and serial of a laptop.  Updated m4s data.
 # 0.89: implemented FLUSH-TO-EMAIL
+# 0.90: small bugfixes
 
-version = "0.89"
+version = "0.90"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 
@@ -147,7 +148,7 @@ LOG_FILENAME = os.path.join(sys.path[0], f'log/lis.txt')
 log_level = getattr(logging, 'INFO')
 log.setLevel(log_level)
 log_handler = logging.handlers.RotatingFileHandler(LOG_FILENAME, maxBytes=1024 * 1024, backupCount=20)
-log_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s')
+log_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(username)s - %(message)s')
 log_handler.setFormatter(log_formatter)
 log.addHandler(log_handler)
 
