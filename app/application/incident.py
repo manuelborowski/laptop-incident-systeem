@@ -151,12 +151,12 @@ def update(data):
                 data["current_location"] = data["location"]
                 if data["current_location"] != incident.current_location:
                     __event(incident, "transition")
-            if "incident_type" in data and data["incident_type"] == "hardware" and incident.m4s_guid == None: # changed type from software to hardware, put incident in M4S if not already in M4S
-                m4s.case_add(incident)
             del data["id"]
             event = data["incident_state"] if incident.incident_state != data["incident_state"] else None
             incident = dl.incident.update(incident, data)
             if incident:
+                if "incident_type" in data and data["incident_type"] == "hardware" and incident.m4s_guid == None:  # changed type from software to hardware, put incident in M4S if not already in M4S
+                    m4s.case_add(incident)
                 if event:
                     __event(incident, event)
                 # store some data in history
