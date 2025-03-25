@@ -134,8 +134,9 @@ from functools import wraps
 # 0.91: add spare history.  Add spare-laptop to incident history
 # 0.92: update info in "update-lis" email
 # 0.93: bugfix, when type changes from SW to HW, was not properly inserted into M4S
+# 0.94: improved adding case in m4s.  Bugfixed manually inputting laptopname and serial number
 
-version = "0.93"
+version = "0.94"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

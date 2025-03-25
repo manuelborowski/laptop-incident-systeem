@@ -62,12 +62,12 @@ class Incident(db.Model, SerializerMixin):
     def flag_check(self, flag):
         return flag in self.flags.split(",")
 
-def add(data = {}):
-    return dl.models.add_single(Incident, data)
+def add(data = {}, commit=True):
+    return dl.models.add_single(Incident, data, commit=commit)
 
 
-def update(incident, data={}):
-    return dl.models.update_single(Incident, incident, data)
+def update(incident, data={}, commit=True):
+    return dl.models.update_single(Incident, incident, data, commit=commit)
 
 
 def get_m(filters=[], fields=[], order_by=None, first=False, count=False, active=True):

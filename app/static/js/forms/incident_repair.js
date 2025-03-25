@@ -200,23 +200,6 @@ export class IncidentRepair {
             })
         });
 
-        // Scan owner laptop -> QR code
-        // document.getElementById("laptop-code-scan").addEventListener("click", (e) => {
-        //     e.preventDefault();
-        //     bootbox.prompt({
-        //         title: "Scan de QR code van de laptop",
-        //         locale: "dutch",
-        //         callback: async res => {
-        //             if (res !== null) {
-        //                 const label = qr_decode(res);
-        //                 const laptop_field = document.getElementById("laptop-field");
-        //                 laptop_field.innerHTML = "";
-        //                 laptop_field.add(new Option(label, label, true, true));
-        //             }
-        //         }
-        //     })
-        // });
-
         // type owner laptop label
         document.getElementById("laptop-code-input").addEventListener("click", (e) => {
             e.preventDefault();
@@ -227,8 +210,8 @@ export class IncidentRepair {
                     if (res !== null) {
                         const laptop_field = document.getElementById("laptop-field");
                         laptop_field.innerHTML = "";
-                        const [label, serial] = res.split("/");
-                        laptop_field.add(new Option(label, serial, true, true));
+                        const [_, serial] = res.split("/");
+                        laptop_field.add(new Option(res, serial, true, true));
                     }
                 }
             })
@@ -419,6 +402,8 @@ export class IncidentRepair {
             }
             data.id = this.incident.id;
             if (data.incident_type !== "hardware") data.m4s_problem_type_guid = "";  // make sure to clear this field, else it pops up in different places
+            const laptop_select_option = document.getElementById("laptop-field").selectedOptions[0];
+            data.laptop_name = laptop_select_option ? laptop_select_option.label : "";
             await fetch_update("incident.incident", data);
 
             // check for new or deleted attachments

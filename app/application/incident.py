@@ -120,19 +120,20 @@ def add(data):
         if incident:
             if data["current_location"] != data["home_location"]:
                 __event(incident, "transition")
-            if incident.incident_type == "hardware":
-                m4s.case_add(incident)
             # store some data in history
             history_data = {"incident_id": incident.id, "priority": incident.priority, "info": incident.info, "incident_type": incident.incident_type,
                             "incident_state": incident.incident_state, "current_location": incident.current_location, "current_incident_owner": incident.current_incident_owner, "time": incident.time, }
             if incident.laptop_owner_password_default:
                 __password_update(incident, app.config["AD_DEFAULT_PASSWORD"])
             history = dl.history.add(history_data)
+            if incident.incident_type == "hardware":
+                ret = m4s.case_add(incident)
+                if ret["status"] != "ok": return ret
         log.info(f'{sys._getframe().f_code.co_name}: incident added, {data}')
         return {"data": {"status": True, "id": incident.id}}
     except Exception as e:
-        log.error(f'{sys._getframe().f_code.co_name}: {e}')
-        raise e
+        log.error(f'{sys._getframe().f_code.co_name}: {str(type(e))}, {e}')
+        return {"status": "error", "msg": f"{str(type(e))}, {e}"}
 
 def update(data):
     try:
@@ -155,8 +156,6 @@ def update(data):
             event = data["incident_state"] if incident.incident_state != data["incident_state"] else None
             incident = dl.incident.update(incident, data)
             if incident:
-                if "incident_type" in data and data["incident_type"] == "hardware" and incident.m4s_guid == None:  # changed type from software to hardware, put incident in M4S if not already in M4S
-                    m4s.case_add(incident)
                 if event:
                     __event(incident, event)
                 # store some data in history
@@ -166,12 +165,15 @@ def update(data):
                 if not current_laptop_owner_password_default and incident.laptop_owner_password_default:
                     __password_update(incident, app.config["AD_DEFAULT_PASSWORD"])
                 log.info(f'{sys._getframe().f_code.co_name}: incident updated, {data}')
+                if "incident_type" in data and data["incident_type"] == "hardware" and incident.m4s_guid == None:  # changed type from software to hardware, put incident in M4S if not already in M4S
+                    ret = m4s.case_add(incident)
+                    if ret["status"] != "ok": return ret
                 return {"id": incident.id}
         log.error(f'{sys._getframe().f_code.co_name}: incident not found, id {data["id"]}')
         return {"status": "error", "msg": f'Incident niet gevonden, id {data["id"]}'}
     except Exception as e:
-        log.error(f'{sys._getframe().f_code.co_name}: {e}')
-        return {"status": "error", "msg": str(e)}
+        log.error(f'{sys._getframe().f_code.co_name}: {str(type(e))}, {e}')
+        return {"status": "error", "msg": f"{str(type(e))}, {e}"}
 
 def get(data={}):
     try:

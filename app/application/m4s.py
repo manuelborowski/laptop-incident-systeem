@@ -128,13 +128,15 @@ class M4S:
                 incident.m4s_reference = resp["ourReference"]
                 log.info(f'{sys._getframe().f_code.co_name}: inserted in m4s, lis-id/m4s-guid/m4s-reference: {incident.id}/{incident.m4s_guid}/{incident.m4s_reference}')
                 dl.incident.commit()
-                return True
+                return {"status": "ok"}
             log.error(f'{sys._getframe().f_code.co_name}: post cases returned {resp.status_code}')
             log.error(f'{sys._getframe().f_code.co_name}: error: {resp.text}')
-            raise Exception(f"post cases returned {resp.status_code}")
+            if "Request.SerialNumber" in resp.text: return {"status": "error", "msg": "Het serienummer ontbreekt"}
+            if "Request.ProblemTypeGuid" in resp.text: return {"status": "error", "msg": "De M4S categorie/probleem ontbreekt"}
+            return {"status": "error", "msg": "Onbekend probleem met M4S, waarschuw ICT"}
         except Exception as e:
-            log.error(f'{sys._getframe().f_code.co_name}: {e}')
-            raise e
+            log.error(f'{sys._getframe().f_code.co_name}: {str(type(e))}, {e}')
+            return {"status": "error", "msg": f"Onbekend probleem met M4S, waarschuw ICT.<br>{str(type(e))}, {e}"}
 
 
 
