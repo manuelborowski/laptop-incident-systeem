@@ -135,8 +135,9 @@ from functools import wraps
 # 0.92: update info in "update-lis" email
 # 0.93: bugfix, when type changes from SW to HW, was not properly inserted into M4S
 # 0.94: improved adding case in m4s.  Bugfixed manually inputting laptopname and serial number
+# 0.95: logging, minor bugfix. incident-repair, make it possible to switch type from sw to hw and back.
 
-version = "0.94"
+version = "0.95"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 
@@ -148,6 +149,8 @@ class MyLogFilter(logging.Filter):
     def filter(self, record):
         record.username = current_user.username if current_user and current_user.is_active else 'NONE'
         return True
+
+log.addFilter(MyLogFilter())
 LOG_FILENAME = os.path.join(sys.path[0], f'log/lis.txt')
 log_level = getattr(logging, 'INFO')
 log.setLevel(log_level)

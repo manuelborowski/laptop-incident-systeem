@@ -38,6 +38,9 @@ class ProblemType(db.Model, SerializerMixin):
 def get_m(filters=[], fields=[], order_by=None, first=False, count=False, active=True):
     return dl.models.get_multiple(ProblemType, filters=filters, fields=fields, order_by=order_by, first=first, count=count, active=active)
 
+def get(filters=[]):
+    return dl.models.get_first_single(ProblemType, filters)
+
 def commit():
     try:
         db.session.commit()

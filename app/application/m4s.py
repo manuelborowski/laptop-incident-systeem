@@ -88,8 +88,9 @@ class M4S:
             if m4s_test == True:
                 log.info("M4S test, no incident is added into M4S")
                 incident.m4s_guid = "test-guid"
+                incident.m4s_reference = "test-reference"
                 dl.incident.commit()
-                return True # test purposes
+                return {"status": "ok"}
             self.init_bearer()
             url = app.config["M4S_API_URL"]
             headers = {"Authorization": f"Bearer {self.bearer_token}", "Content-Type": "application/json"}

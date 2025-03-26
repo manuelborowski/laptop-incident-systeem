@@ -1,0 +1,7 @@
+/instance/config.py
+/log/**
+/migrations/**
+/venv/**
+/test/
+/attachments
+/.idea

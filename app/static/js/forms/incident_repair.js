@@ -31,8 +31,6 @@ export class IncidentRepair {
             this.m4s_problem_type_guid_field.parentElement.classList.remove("required");
             this.location_field.style.background = "white";
         }
-        // if (this.incident) this.__state_select_set(); // The possible states depend on the incident type
-        await form_populate({incident_type, incident_state: "first", location: this.meta.default.location, category: "repair"}, this.meta);
     }
 
     __state_select_set = () => {
