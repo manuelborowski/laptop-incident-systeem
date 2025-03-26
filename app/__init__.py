@@ -136,8 +136,9 @@ from functools import wraps
 # 0.93: bugfix, when type changes from SW to HW, was not properly inserted into M4S
 # 0.94: improved adding case in m4s.  Bugfixed manually inputting laptopname and serial number
 # 0.95: logging, minor bugfix. incident-repair, make it possible to switch type from sw to hw and back.
+# 0.96: small bugfix when closing incident.  Added info field for spare laptops.
 
-version = "0.95"
+version = "0.96"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

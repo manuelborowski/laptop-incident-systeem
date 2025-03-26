@@ -153,7 +153,7 @@ def update(data):
                 if data["current_location"] != incident.current_location:
                     __event(incident, "transition")
             # incident type changes from hardware to something else.  Save M4S reference in history and clear M4S specific fields.
-            if incident.incident_type == "hardware" and data["incident_type"] != "hardware":
+            if "incident_type" in data and incident.incident_type == "hardware" and data["incident_type"] != "hardware":
                 m4s_problem = dl.m4s.get(("guid", "=", incident.m4s_problem_type_guid))
                 info = f"M4S: {incident.m4s_reference}, {m4s_problem.problem if m4s_problem else 'NVT'}"
                 history_data = {"incident_id": incident.id, "priority": incident.priority, "info": info, "incident_type": incident.incident_type,

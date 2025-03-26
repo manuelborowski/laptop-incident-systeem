@@ -1,4 +1,4 @@
-from email.policy import default
+from sqlalchemy import UnicodeText
 from app import db
 from sqlalchemy_serializer import SerializerMixin
 from app import data as dl
@@ -19,6 +19,7 @@ class Spare(db.Model, SerializerMixin):
     serial = db.Column(db.String(256), default=None)
     location = db.Column(db.String(256), default=None)
     active = db.Column(db.Boolean, default=True)    # long term
+    info = db.Column(UnicodeText, default=None)
 
 def add(data = {}):
     return dl.models.add_single(Spare, data)
