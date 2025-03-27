@@ -140,8 +140,9 @@ from functools import wraps
 # 0.97: rename incident to reparatie
 # 0.98: rename incident to herstelling
 # 0.99: remove filter-button-scan-badge
+# 0.100: small update
 
-version = "0.99"
+version = "0.100"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

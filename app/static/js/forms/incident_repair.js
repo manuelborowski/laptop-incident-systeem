@@ -360,7 +360,7 @@ export class IncidentRepair {
             document.querySelectorAll(".required").forEach(i => i.classList.toggle("required"));
             this.__incident_type_changed(this.incident.incident_type);
         } else { // new repair
-            const defaults = Object.assign(this.meta.default, {incident_state: "started", incident_type: "software", laptop_owner_password: "", category: "repair"}); // clear password and lis field
+            const defaults = Object.assign(this.meta.default, {incident_state: "transition", incident_type: "software", laptop_owner_password: "", category: "repair"}); // clear password and lis field
             await form_populate(defaults, this.meta);
             const students = await fetch_get("student.student", {fields: "naam,voornaam,klasgroepcode,leerlingnummer"})
             const student_data = students ? students.map(e => ({id: "leerling-" + e.leerlingnummer, text: `${e.naam} ${e.voornaam} ${e.klasgroepcode}`})) : []
