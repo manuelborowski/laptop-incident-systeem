@@ -137,8 +137,9 @@ from functools import wraps
 # 0.94: improved adding case in m4s.  Bugfixed manually inputting laptopname and serial number
 # 0.95: logging, minor bugfix. incident-repair, make it possible to switch type from sw to hw and back.
 # 0.96: small bugfix when closing incident.  Added info field for spare laptops.
+# 0.97: rename incident to reparatie
 
-version = "0.96"
+version = "0.97"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 
@@ -222,7 +223,7 @@ def default_db_entries():
                 admin = User(username='admin', password='admin', level=5, user_type=User.USER_TYPE.LOCAL)
                 db.session.add(admin)
                 db.session.commit()
-            # create api account if not present
+            # create api account if not present.  All access via the API is on account of this user.
             find_api = User.query.filter(User.username == 'api').first()
             if not find_api:
                 api = User(username='api', password=app.config["USER_API_PASSWORD"], level=1, user_type=User.USER_TYPE.LOCAL)
