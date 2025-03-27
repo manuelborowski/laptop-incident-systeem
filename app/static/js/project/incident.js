@@ -552,12 +552,6 @@ const filter_menu_items = [
         label: 'Type',
         persistent: true
     },
-    {
-        type: 'button',
-        id: 'btn-scan-lis-badge',
-        label: 'Scan LIS',
-        callback: __filter_scan_lis_badge
-    },
 ]
 
 const __table_loaded = () => {

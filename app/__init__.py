@@ -139,8 +139,9 @@ from functools import wraps
 # 0.96: small bugfix when closing incident.  Added info field for spare laptops.
 # 0.97: rename incident to reparatie
 # 0.98: rename incident to herstelling
+# 0.99: remove filter-button-scan-badge
 
-version = "0.98"
+version = "0.99"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

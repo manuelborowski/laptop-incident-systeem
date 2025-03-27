@@ -88,7 +88,10 @@ export class FilterMenu {
     load_settings() {
         const store = JSON.parse(localStorage.getItem(`Filter-${this.id}`));
         if (store === null || store === []) return false
-        for(const f of store) document.querySelector(`#${f.id}`).value = f.value;
+        for(const f of store) {
+            const element = document.querySelector(`#${f.id}`);
+            if (element) element.value = f.value;
+        }
         return true;
     }
 
