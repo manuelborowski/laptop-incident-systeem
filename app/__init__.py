@@ -138,8 +138,9 @@ from functools import wraps
 # 0.95: logging, minor bugfix. incident-repair, make it possible to switch type from sw to hw and back.
 # 0.96: small bugfix when closing incident.  Added info field for spare laptops.
 # 0.97: rename incident to reparatie
+# 0.98: rename incident to herstelling
 
-version = "0.97"
+version = "0.98"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

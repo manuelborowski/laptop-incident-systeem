@@ -10,7 +10,7 @@ const meta = await fetch_get("incident.meta")
 const __repair_form = async (incident = null, history = "") => {
 
     let repair = null;
-    const title = incident ? "Reparatie aanpassen (<span style='color:orangered;'>verplichte velden</span>)" : "Nieuwe reparatie (<span style='color:orangered;'>verplichte velden</span>)";
+    const title = incident ? "Herstelling aanpassen (<span style='color:orangered;'>verplichte velden</span>)" : "Nieuwe herstelling (<span style='color:orangered;'>verplichte velden</span>)";
     const form = await fetch_get("incident.form", {form: "repair"});
     form.template = form.template.replace("{{ form_css_file }}", "<link href=\"static/css/form.css\" rel=\"stylesheet\">\n");
     let bootbox_dialog = null;
@@ -462,7 +462,7 @@ const button_menu_items = [
     {
         type: 'button',
         id: 'repair-new',
-        label: 'Nieuwe reparatie',
+        label: 'Nieuwe herstelling',
         cb: () => __repair_form()
     },
     {
