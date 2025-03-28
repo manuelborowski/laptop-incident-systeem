@@ -143,8 +143,9 @@ from functools import wraps
 # 0.100: small update
 # 0.101: update navigation menu to include hard urls
 # 0.102: update states, depending on type
+# 0.103: small bugfix with regard to new state
 
-version = "0.102"
+version = "0.103"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 
