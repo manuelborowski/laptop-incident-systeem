@@ -129,7 +129,7 @@ def meta():
     home_locations = dl.settings.get_configuration_setting("lis-home-locations")
     home_location_options = [{"value": k, "label": location_labels[k]} for k in home_locations]
     m4s_problem_types = m4s.problem_type_get()
-    m4s_category_options =  [{"value": "none", "label": "Selecteer categorie"}] + [{"value": k, "label": k} for k, _ in m4s_problem_types.items()]
+    m4s_category_options = [{"value": "none", "label": "Selecteer categorie"}] + [{"value": k, "label": k} for k, _ in m4s_problem_types.items()]
     m4s_problem_options = m4s_problem_types["Algemeen"]
     m4s_problem_options = [{"value": "none", "label": ""}]
     m4s_problem_labels = {t["value"]: t["label"] for _, types in m4s_problem_types.items() for t in types}
@@ -146,10 +146,10 @@ def meta():
                        "keyed_option": keyed_options,
                        "location": locations,
                        "m4s": m4s_problem_types,
-
+                       "type": incident_types
                        })
 
-@bp_incident.route('/incident/location', methods=['POST',])
+@bp_incident.route('/incident/location', methods=['POST', ])
 @login_required
 def location():
     try:
@@ -162,7 +162,7 @@ def location():
         log.error(f'{sys._getframe().f_code.co_name}: Exception, {e}')
         return fetch_return_error(f'Exception, {e}')
 
-@bp_incident.route('/incident/laptop', methods=['GET',])
+@bp_incident.route('/incident/laptop', methods=['GET', ])
 @login_required
 def laptop():
     try:
@@ -234,7 +234,7 @@ class Config(DatatableConfig):
             "expecting": edit_button_template + history_button_template + close_button_template,
             "signpost": edit_button_template + history_button_template + close_button_template,
             "loaned": edit_button_template + history_button_template + message_button_template + close_button_template,
-            "closed":  history_button_template
+            "closed": history_button_template
         }
 
         # used in dt.js
@@ -250,7 +250,8 @@ class Config(DatatableConfig):
         for column in template:
             if "data" in column:
                 if column["data"] == "incident_state" and column["name"] == "Status":
-                    column["display"] = {"template": "%0% (%1%/%2%)", "fields": [{"field": "incident_state", "labels": state_labels}, {"field": "current_location", "labels": location_labels}, {"field": "current_incident_owner"}, {"field": "incident_state", "colors": state_colors}]}
+                    column["display"] = {"template": "%0% (%1%/%2%)", "fields": [{"field": "incident_state", "labels": state_labels}, {"field": "current_location", "labels": location_labels},
+                                                                                 {"field": "current_incident_owner"}, {"field": "incident_state", "colors": state_colors}]}
                 if column["data"] == "home_location":
                     column["display"] = {"template": "%0%/%1%", "fields": [{"field": "home_location", "labels": location_labels}, {"field": "home_incident_owner"}]}
                 if column["data"] == "category":
@@ -271,6 +272,7 @@ class Config(DatatableConfig):
 
     def format_data(self, db_list, total_count=None, filtered_count=None):
         return al.incident.format_data(db_list, total_count, filtered_count)
+
 config = Config("incident", "Incidenten")
 
 @bp_incident.route('/mincidentshow', methods=['GET'])
@@ -305,9 +307,7 @@ def qr():
         log.error(f'{sys._getframe().f_code.co_name}: Exception, {e}')
         return fetch_return_error(f'Exception, {e}')
 
-
 @bp_incident.route('/incidenthelp', methods=['GET'])
 @login_required
 def help():
     return render_template("help.html")
-

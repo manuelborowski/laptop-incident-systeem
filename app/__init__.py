@@ -142,8 +142,9 @@ from functools import wraps
 # 0.99: remove filter-button-scan-badge
 # 0.100: small update
 # 0.101: update navigation menu to include hard urls
+# 0.102: update states, depending on type
 
-version = "0.101"
+version = "0.102"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

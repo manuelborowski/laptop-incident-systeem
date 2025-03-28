@@ -17,6 +17,7 @@ export class IncidentRepair {
     }
 
     __incident_type_changed = async (incident_type) => {
+        // Update harware specific fields
         document.getElementById("hardware-repair-group").hidden = incident_type !== "hardware"
         if (incident_type === "hardware") { // make sure that a valid location is displayed, and highlight if it is changed.  Make clear the info field is required
             if (!(this.incident && this.incident.m4s_guid !== null)) {
@@ -31,6 +32,8 @@ export class IncidentRepair {
             this.m4s_problem_type_guid_field.parentElement.classList.remove("required");
             this.location_field.style.background = "white";
         }
+        // Update state-select, depending on type
+        form_populate({incident_state: this.meta.type[incident_type].incident_state[0], incident_type}, this.meta);
     }
 
     __state_select_set = () => {
