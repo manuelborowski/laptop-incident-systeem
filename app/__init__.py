@@ -141,8 +141,9 @@ from functools import wraps
 # 0.98: rename incident to herstelling
 # 0.99: remove filter-button-scan-badge
 # 0.100: small update
+# 0.101: update navigation menu to include hard urls
 
-version = "0.100"
+version = "0.101"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

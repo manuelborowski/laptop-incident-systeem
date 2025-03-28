@@ -7,7 +7,7 @@ var menu = [
     ["lisbadge.show", "LIS badges", 3],
     ["user.show", "Gebruikers", 5],
     ["settings.show", "Instellingen", 5],
-    ["incident.help", "Help", 1],
+    [() => window.open("https://wiki.ict.campussintursula.be/nl/home/laptop-incident-systeem", "_blank"), "Help", 1],
 ]
 
 export const inject_menu = new_menu => {
@@ -64,14 +64,18 @@ export const base_init = ({button_menu_items = []}) => {
                 dd_ctr++;
             } else {
                 // regular menu-item
-                const url_path = Flask.url_for(item[0]);
                 li.classList.add("nav-item");
                 const a = document.createElement("a");
                 a.classList.add("nav-link");
-                if (window.location.href.includes(url_path)) {
-                    a.classList.add("active");
+                if (typeof item[0] === "function") {
+                    a.onclick = item[0];
+                } else {
+                    const url_path = Flask.url_for(item[0]);
+                    if (window.location.href.includes(url_path)) {
+                        a.classList.add("active");
+                    }
+                    a.href = url_path;
                 }
-                a.href = url_path;
                 a.innerHTML = item[1];
                 li.appendChild(a);
             }
