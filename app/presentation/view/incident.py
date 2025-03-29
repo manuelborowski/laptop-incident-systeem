@@ -262,7 +262,7 @@ class Config(DatatableConfig):
                 if column["data"] == "m4s_problem_type_guid":
                     column["label"] = {"labels": m4s_problem_labels}
                 if column["data"] == "m4s_reference":
-                    column["display"] = {"template": '<a target="_blank" href="https://byod.signpost.be/incidents/%0%">%0%</a>', "fields": [{"field": "m4s_reference"}]}
+                    column["display"] = {"template": '<a target="_blank" href="https://byod.signpost.be/incidents/%1%">%0%</a>', "fields": [{"field": "m4s_reference"}, {"field": "m4s_guid"}]}
                 if column["data"] == "info":
                     column["ellipsis"] = {"cutoff": 30, "wordbreak": True}
                 if column["data"] == "lis_badge_id":
