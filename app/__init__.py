@@ -144,8 +144,9 @@ from functools import wraps
 # 0.101: update navigation menu to include hard urls
 # 0.102: update states, depending on type
 # 0.103: small bugfix with regard to new state
+# 0.104: updated m4s reference, use template to insert url.  Updated filter-fields.
 
-version = "0.103"
+version = "0.104"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

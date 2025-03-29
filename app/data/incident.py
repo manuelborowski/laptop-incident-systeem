@@ -101,7 +101,7 @@ def pre_sql_filter(query, filters):
         if f['id'] == 'incident-state-closed' and not f['value']:
             query = query.filter(Incident.incident_state != "closed")
         if f['id'] == 'incident-owner-id' and f['value'] != 'all':
-            query = query.filter(Incident.home_incident_owner == f['value'])
+            query = query.filter(Incident.current_incident_owner == f['value'])
         if f['id'] == 'incident-state' and f['value'] != 'all':
             query = query.filter(Incident.incident_state == f['value'])
         if f['id'] == 'incident-type' and f['value'] != 'all':
@@ -109,13 +109,13 @@ def pre_sql_filter(query, filters):
         if f['id'] == 'incident-id' and f["value"]:
             query = query.filter(Incident.id == f['value'])
         if f['id'] == 'location' and f["value"] != "all":
-            query = query.filter(Incident.home_location == f['value'])
+            query = query.filter(Incident.current_location == f['value'])
     return query
 
 def pre_sql_search(search_string):
     search_constraints = []
     search_constraints.append(Incident.id.like(search_string))
-    search_constraints.append(Incident.home_incident_owner.like(search_string))
+    search_constraints.append(Incident.current_incident_owner.like(search_string))
     search_constraints.append(Incident.lis_badge_id.like(search_string))
     search_constraints.append(Incident.laptop_owner_name.like(search_string))
     search_constraints.append(Incident.laptop_name.like(search_string))

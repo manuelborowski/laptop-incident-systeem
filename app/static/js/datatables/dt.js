@@ -9,6 +9,10 @@ import {CellEdit} from "./cell_edit.js";
 import {ColumnVisibility} from "../common/column_visibility.js";
 
 export let datatable_column2index = {};
+// The index in the array is the index of the datacolumn in datatable.
+// The value is the index of the visible column.
+// [0, 1, 2, null, 3, 4] => datacolumn 3 is NOT visible, datacolumn 4 is visible as the 3rd column
+export let datatable_column_shifter = [];
 export let ctx = null;
 
 //If not exactly one checkbox is selected, display warning and return false, else return true
@@ -72,16 +76,15 @@ export const datatables_init = ({context_menu_items=[], filter_menu_items=[], bu
     const filter_menu = new FilterMenu(document.querySelector(".filter-menu-placeholder"), filter_menu_items, datatable_reload_table, ctx.table_config.view);
 
     // when columns are hidden, this array maps the real column index on the visible column index
-    let column_shifter = [];
     const __calc_column_shift = () => {
-        column_shifter = [];
+        datatable_column_shifter = [];
         let shift = 0;
         for (let i = 0; i < ctx.table.columns().count(); i++) {
             if (ctx.table.column(i).visible()) {
-                column_shifter.push(i - shift);
+                datatable_column_shifter.push(i - shift);
             } else {
                 shift++;
-                column_shifter.push(null);
+                datatable_column_shifter.push(null);
             }
         }
     }
@@ -119,7 +122,7 @@ export const datatables_init = ({context_menu_items=[], filter_menu_items=[], bu
                 var template = values[0];
                 if ("template" in v.display) {
                     template = v.display.template;
-                    for (let i=0; i < values.length; i++) template = template.replace(`%${i}%`, values[i]);
+                    for (let i=0; i < values.length; i++) template = template.replaceAll(`%${i}%`, values[i]);
                 }
                 if (color) {
                     return `<div style="background:${color};">${template}</div>`
@@ -180,8 +183,8 @@ export const datatables_init = ({context_menu_items=[], filter_menu_items=[], bu
             // celledit of type select: overwrite cell content with label from optionlist
             if (cell_edit.select_options) {
                 for (const [column, select] of Object.entries(cell_edit.select_options)) {
-                    if (column_shifter[column] !== null) {
-                        row.cells[column_shifter[column]].innerHTML = select[row.cells[column_shifter[column]].innerHTML];
+                    if (datatable_column_shifter[column] !== null) {
+                        row.cells[datatable_column_shifter[column]].innerHTML = select[row.cells[datatable_column_shifter[column]].innerHTML];
                     }
                 }
             }

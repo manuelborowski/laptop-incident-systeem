@@ -1,4 +1,4 @@
-import {datatable_column2index, datatable_reload_table, datatable_row_data_from_target, datatables_init, update_cell} from "../datatables/dt.js";
+import { datatable_reload_table, datatable_row_data_from_target, datatables_init} from "../datatables/dt.js";
 import {fetch_get, fetch_post, fetch_update, form_default_set, form_populate} from "../common/common.js";
 import {badge_raw2hex} from "../common/rfid.js";
 import {AlertPopup} from "../common/popup.js";
@@ -587,10 +587,6 @@ const __table_loaded = () => {
 const __row_created = (row, data, data_index, cells) => {
     if (data.flags && data.flags.split(",").includes("state-timeout")) {
         $(row).attr("style", `background-color: #ffa5006b;`);
-    }
-    if (data.m4s_guid !== null) {
-        const cell_index = datatable_column2index["m4s_reference"];
-        row.cells[cell_index].innerHTML = `<a target="_blank" href="https://byod.signpost.be/incidents/${data.m4s_guid}">${cells[cell_index].innerHTML}</a>`;
     }
 }
 
