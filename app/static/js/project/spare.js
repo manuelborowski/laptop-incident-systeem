@@ -3,7 +3,6 @@ import {AlertPopup} from "../common/popup.js";
 import {fetch_update, fetch_post, fetch_get, form_populate} from "../common/common.js";
 import {badge_raw2hex} from "../common/rfid.js";
 
-
 const __dialog_new_single_spare = async (default_id = null, default_auto_increment = false) => {
     const form = await fetch_get("spare.form", {form: "spare"})
     if (form) {
@@ -165,7 +164,6 @@ const __history_form = async (ids) => {
         });
     }
 }
-
 
 const context_menu_items = [
     {type: "item", label: 'Historiek', iconscout: 'history', cb: __history_form},

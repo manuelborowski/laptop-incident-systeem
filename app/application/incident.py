@@ -317,9 +317,15 @@ def message_send(data):
 
 def format_data(db_list, total_count=None, filtered_count=None):
     out = []
+    students = dl.student.get_m()
+    student_cache = {s.leerlingnummer: s.username for s in students}
     for i in db_list:
         em = i.to_dict()
         em.update({"row_action": i.id, "DT_RowId": i.id,"state_event": "NA"})
+        if i.laptop_type == "personeel":
+            em.update({"login": i.laptop_owner_id})
+        elif i.laptop_type == "leerling":
+            em.update({"login": student_cache[i.laptop_owner_id]})
         out.append(em)
     return total_count, filtered_count, out
 

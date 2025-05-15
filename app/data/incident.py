@@ -120,6 +120,7 @@ def pre_sql_search(search_string):
     search_constraints.append(Incident.laptop_owner_name.like(search_string))
     search_constraints.append(Incident.laptop_name.like(search_string))
     search_constraints.append(Incident.info.like(search_string))
+    search_constraints.append(Incident.m4s_reference.like(search_string))
     return search_constraints
 
 
