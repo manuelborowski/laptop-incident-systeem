@@ -114,7 +114,7 @@ def add(data):
         data["home_incident_owner"] = current_user.username
         data["current_incident_owner"] = current_user.username
         _, default_location = dl.settings.get_setting("default-location", current_user.username)
-        data["home_location"] = default_location
+        data["home_location"] = data["location"]
         data["current_location"] = data["location"]
         incident = dl.incident.add(data)
         if incident:
