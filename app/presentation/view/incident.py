@@ -229,7 +229,8 @@ class Config(DatatableConfig):
         action_labels = {
             "started": edit_button_template + history_button_template + message_button_template,
             "transition": edit_button_template + history_button_template + message_button_template,
-            "installing": edit_button_template + history_button_template + message_button_template + close_button_template,
+            "installing": edit_button_template + history_button_template + message_button_template,
+            "installed": edit_button_template + history_button_template + message_button_template + close_button_template,
             "repaired": edit_button_template + history_button_template + message_button_template + close_button_template,
             "prepared": edit_button_template + history_button_template + message_button_template,
             "expecting": edit_button_template + history_button_template + close_button_template,

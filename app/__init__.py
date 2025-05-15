@@ -147,8 +147,9 @@ from functools import wraps
 # 0.104: updated m4s reference, use template to insert url.  Updated filter-fields.
 # 0.105: small bugfix
 # 0.106: search in M4S column.  Add "login" column
+# 0.107: small bugfix and added state "installed"
 
-version = "0.106"
+version = "0.107"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

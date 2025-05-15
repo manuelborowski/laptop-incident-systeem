@@ -16,7 +16,8 @@ export class IncidentRepair {
         this.attachments_to_delete = [];
     }
 
-    __incident_type_changed = async (incident_type) => {
+    // Depending on the incident type hide/display specific elements of the form
+    __display_elements = async (incident_type) => {
         // Update harware specific fields
         document.getElementById("hardware-repair-group").hidden = incident_type !== "hardware"
         if (incident_type === "hardware") { // make sure that a valid location is displayed, and highlight if it is changed.  Make clear the info field is required
@@ -32,8 +33,6 @@ export class IncidentRepair {
             this.m4s_problem_type_guid_field.parentElement.classList.remove("required");
             this.location_field.style.background = "white";
         }
-        // Update state-select, depending on type
-        form_populate({incident_state: this.meta.type[incident_type].incident_state[0], incident_type}, this.meta);
     }
 
     __state_select_set = () => {
@@ -361,7 +360,7 @@ export class IncidentRepair {
             document.querySelectorAll(".repair-update-hidden").forEach(i => i.hidden = true);
             document.querySelectorAll(".repair-update-disabled").forEach(i => i.disabled = true);
             document.querySelectorAll(".required").forEach(i => i.classList.toggle("required"));
-            this.__incident_type_changed(this.incident.incident_type);
+            this.__display_elements(this.incident.incident_type);
         } else { // new repair
             const defaults = Object.assign(this.meta.default, {incident_state: "transition", incident_type: "software", laptop_owner_password: "", category: "repair"}); // clear password and lis field
             await form_populate(defaults, this.meta);
@@ -370,7 +369,7 @@ export class IncidentRepair {
             const staff = await fetch_get("staff.staff", {fields: "naam,voornaam,code"})
             const staff_data = staff ? staff.map(e => ({id: "personeel-" + e.code, text: `${e.naam} ${e.voornaam}`})) : []
             this.owner_field_options = [{id: "", text: "Selecteer een leerling of leerkracht"}].concat(student_data.concat(staff_data));
-            this.__incident_type_changed("software");
+            this.__display_elements("software");
         }
 
         // select2 field has it's own way of adding options
@@ -383,7 +382,10 @@ export class IncidentRepair {
         this.__password_field_hide(this.incident_update);
 
         this.lis_type_field.addEventListener("change", async e => {
-            this.__incident_type_changed(e.target.value);
+            this.__display_elements(e.target.value);
+            // Update state-select-optionss, depending on type
+            form_populate({incident_state: this.meta.type[this.lis_type_field.value].incident_state[0], incident_type: this.lis_type_field.value}, this.meta);
+
         });
     }
 
