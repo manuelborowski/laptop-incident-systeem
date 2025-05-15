@@ -148,8 +148,9 @@ from functools import wraps
 # 0.105: small bugfix
 # 0.106: search in M4S column.  Add "login" column
 # 0.107: small bugfix and added state "installed"
+# 0.108: small bugfix
 
-version = "0.107"
+version = "0.108"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

@@ -325,7 +325,9 @@ def format_data(db_list, total_count=None, filtered_count=None):
         if i.laptop_type == "personeel":
             em.update({"login": i.laptop_owner_id})
         elif i.laptop_type == "leerling":
-            em.update({"login": student_cache[i.laptop_owner_id]})
+            em.update({"login": student_cache[i.laptop_owner_id] if i.laptop_owner_id in student_cache else ""})
+        else:
+            em.update({"login": ""})
         out.append(em)
     return total_count, filtered_count, out
 
