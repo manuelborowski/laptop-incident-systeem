@@ -15,6 +15,7 @@ def add(incident_id, attachments):
                 "name": file.filename,
                 "type": file.content_type,
             })
+            log.info(f'{sys._getframe().f_code.co_name}: saved attachment "{file.filename}", (type) {file.content_type}, (id) {incident_id}')
             file.save(f"attachments/{attachment.id}")
     except Exception as e:
         log.error(f'{sys._getframe().f_code.co_name}: {e}')

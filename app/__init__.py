@@ -150,8 +150,9 @@ from functools import wraps
 # 0.107: small bugfix and added state "installed"
 # 0.108: small bugfix
 # 0.109: new repair, location is saved to current and home location
+# 0.110: history form, add M4S reference, if applicable.
 
-version = "0.109"
+version = "0.110"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

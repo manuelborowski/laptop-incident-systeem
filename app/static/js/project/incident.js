@@ -394,6 +394,13 @@ const __history_form = async (ids) => {
                     tr += "</tr>";
                     history_table.innerHTML += tr;
                 }
+                if (incident.m4s_reference !== "") {
+                    const m4s_reference_row = document.getElementById("m4s-reference-field");
+                    m4s_reference_row.hidden = false;
+                    const m4s_reference_a = m4s_reference_row.querySelector("a");
+                    m4s_reference_a.innerHTML = incident.m4s_reference;
+                    m4s_reference_a.href = `https://byod.signpost.be/incidents/${incident.m4s_guid}`;
+                }
                 await form_populate(incident);
             },
         });

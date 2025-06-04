@@ -71,7 +71,7 @@ export const form_populate = async (data, meta = null) => {
                     field.innerHTML = "";
                     for (const item of meta.option[field_name]) field.add(new Option(item.label, item.value, value === item.value, value === item.value));
                 }
-            } else {
+            } else { // input field
                 if (meta && "label" in meta && field_name in meta.label) value = meta.label[field_name][value];
                 field.value = value;
             }
