@@ -151,8 +151,9 @@ from functools import wraps
 # 0.108: small bugfix
 # 0.109: new repair, location is saved to current and home location
 # 0.110: history form, add M4S reference, if applicable.
+# 0.111: update api with respect to laptop-return
 
-version = "0.110"
+version = "0.111"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

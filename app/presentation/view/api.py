@@ -63,14 +63,8 @@ def retour():
     try:
         din = json.loads(request.data)
         log.info(din)
-        dout = {"info": f'{din["naam"]}+{din["voornaam"]}+{din["klas"]}+{din["laptop"]}+{din["telefoon"]}+{din["email"]}',
-                "category": "return",
-                "incident_type": din["naar"],
-                "location": din["locatie"],
-                "incident_state": "prepared",
-                }
-        ret = al.incident.add(dout)
-        return("ok")
+        ret = al.incident.api_add_laptop_return(din)
+        return(json.dumps(ret))
     except Exception as e:
         log.error(f'{sys._getframe().f_code.co_name}: {e}')
-        return "Deze velden zijn verplicht: naam, voornaam, klas, laptop, telefoon, email"
+        return {"status": "error", "msg": "Deze velden zijn verplicht: achternaam, voornaam, klas, laptop-label, telefoon, mail, bestemming, balie"}

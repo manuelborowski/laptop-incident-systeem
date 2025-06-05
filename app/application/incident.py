@@ -4,9 +4,10 @@ from app import app, data as dl, application as al
 from flask_login import current_user
 from flask import request
 
-#logging on file level
+# logging on file level
 import logging
 from app import MyLogFilter, top_log_handle
+
 log = logging.getLogger(f"{top_log_handle}.{__name__}")
 log.addFilter(MyLogFilter())
 
@@ -59,7 +60,7 @@ def __send_return_message_to_location(incident):
             url = request.url_root
             body = "<b><u>1 laptop aangemeld voor retour</u></b><br>"
             body += (f'<a href="{url}incidentshow?id={incident.id}">&#x1F517;</a>(Tijd) {incident.time}, (Wie) {incident.current_incident_owner}, '
-                    f'(Locatie) {locations[incident.home_location]["label"]}, (Info) {incident.info}')
+                     f'(Locatie) {locations[incident.home_location]["label"]}, (Info) {incident.info}')
             body += "<br><br>Laptop Incident Systeem"
             dl.entra.entra.send_mail(location["email"], "LIS update", body)
             log.info(f"{sys._getframe().f_code.co_name}, new-return mail sent to {location['email']}, {incident.info}")
@@ -135,6 +136,38 @@ def add(data):
         log.error(f'{sys._getframe().f_code.co_name}: {str(type(e))}, {e}')
         return {"status": "error", "msg": f"{str(type(e))}, {e}"}
 
+def api_add_laptop_return(din):
+    try:
+        locations = dl.settings.get_configuration_setting("lis-locations")
+        location_cache = {v["label"]: k for k, v in locations.items()}
+        incident_types = dl.settings.get_configuration_setting("lis-incident-types")
+        type_cache = {v["label"]: k for k, v in incident_types.items()}
+
+        dout = {
+            "laptop_owner_name": f'{din["achternaam"]} {din["voornaam"]} {din["klas"]}',
+            "laptop_name": din["laptop-label"],
+            "info": f'Tel: {din["tel"]} Email: {din["mail"]}',
+            "category": "return",
+            "incident_state": "expecting",
+        }
+
+        if din["bestemming"] in type_cache:
+            dout["incident_type"] = type_cache[din["bestemming"]]
+        else:
+            return {"status": "error", "msg": f"parameter bestemming ({din['bestemming']}) is niet geldig"}
+        if din["balie"] in location_cache:
+            dout["location"] = location_cache[din["balie"]]
+        else:
+            return {"status": "error", "msg": f"parameter balie ({din['balie']}) is niet geldig"}
+        ret = al.incident.add(dout)
+        if "status" in ret:
+            return ret
+        else:
+            return {"status": "ok", "id": ret["data"]["id"]}
+    except Exception as e:
+        log.error(f'{sys._getframe().f_code.co_name}: {str(type(e))}, {e}')
+        return {"status": "error", "msg": f"{str(type(e))}, {e}"}
+
 def update(data):
     try:
         incident = dl.incident.get(("id", "=", data["id"]))
@@ -157,7 +190,7 @@ def update(data):
                 m4s_problem = dl.m4s.get(("guid", "=", incident.m4s_problem_type_guid))
                 info = f"M4S: {incident.m4s_reference}, {m4s_problem.problem if m4s_problem else 'NVT'}"
                 history_data = {"incident_id": incident.id, "priority": incident.priority, "info": info, "incident_type": incident.incident_type,
-                    "incident_state": incident.incident_state, "current_location": incident.current_location, "current_incident_owner": incident.current_incident_owner, "time": incident.time,}
+                                "incident_state": incident.incident_state, "current_location": incident.current_location, "current_incident_owner": incident.current_incident_owner, "time": incident.time, }
                 history = dl.history.add(history_data)
                 data["m4s_reference"] = ""
                 data["m4s_problem_type_guid"] = ""
@@ -170,7 +203,7 @@ def update(data):
                     __event(incident, event)
                 # store some data in history
                 history_data = {"incident_id": incident.id, "priority": incident.priority, "info": incident.info, "incident_type": incident.incident_type,
-                    "incident_state": incident.incident_state, "current_location": incident.current_location, "current_incident_owner": incident.current_incident_owner, "time": incident.time,}
+                                "incident_state": incident.incident_state, "current_location": incident.current_location, "current_incident_owner": incident.current_incident_owner, "time": incident.time, }
                 history = dl.history.add(history_data)
                 if not current_laptop_owner_password_default and incident.laptop_owner_password_default:
                     __password_update(incident, app.config["AD_DEFAULT_PASSWORD"])
@@ -187,7 +220,7 @@ def update(data):
 
 def get(data={}):
     try:
-        filters = [(k, "=", v) for k,v in data.items()]
+        filters = [(k, "=", v) for k, v in data.items()]
         incidents = dl.incident.get_m(filters)
         if incidents:
             if len(incidents) > 1:
@@ -253,7 +286,7 @@ def message_default(incident_id):
                 else:
                     signature = "ICT"
                 template = template.replace("%%SIGNATURE%%", signature)
-                return {"message_subject": "Uw laptop is klaar",  "message_content": template}
+                return {"message_subject": "Uw laptop is klaar", "message_content": template}
             return {"message_subject": "", "message_content": ""}
         log.error(f'{sys._getframe().f_code.co_name}: unknown incident id {incident_id}')
         return {"status": "error", "msg": f"Kan standaardbericht niet ophalen, incident id is niet gekend {incident_id}"}
@@ -288,7 +321,7 @@ def message_send(data):
                 elif incident.laptop_type == "personeel":
                     laptop_owner = dl.staff.get(("code", "=", incident.laptop_owner_id))
                     ss_to = [laptop_owner.ss_internal_nbr]
-                else: # spare laptop
+                else:  # spare laptop
                     location = dl.settings.get_configuration_setting("lis-locations")[incident.laptop_owner_id]
                     if "message" in location:
                         for code in location["message"]:
@@ -321,7 +354,7 @@ def format_data(db_list, total_count=None, filtered_count=None):
     student_cache = {s.leerlingnummer: s.username for s in students}
     for i in db_list:
         em = i.to_dict()
-        em.update({"row_action": i.id, "DT_RowId": i.id,"state_event": "NA"})
+        em.update({"row_action": i.id, "DT_RowId": i.id, "state_event": "NA"})
         if i.laptop_type == "personeel":
             em.update({"login": i.laptop_owner_id})
         elif i.laptop_type == "leerling":
@@ -335,6 +368,7 @@ def incident_cron_state_timeout(opaque=None):
     try:
         timeout_locations = {}
         now = datetime.datetime.now()
+
         def __check_timeout(incidents, key, timeout):
             for incident in incidents:
                 if now > incident.time + timeout and not incident.flag_check("state-timeout"):
@@ -382,7 +416,3 @@ def incident_cron_state_timeout(opaque=None):
                     log.info(f"{sys._getframe().f_code.co_name}, state-timeout mail sent to {location['email']}")
     except Exception as e:
         log.error(f'{sys._getframe().f_code.co_name}: {e}')
-
-
-
-
