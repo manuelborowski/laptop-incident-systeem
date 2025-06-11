@@ -27,10 +27,19 @@
             <button id="laptop-code-input" class="btn btn-success">Laptop: typ label en serienummer</button>
         </div>
         <div class="form-row">
-            <div class="form-element"><label>Wachtwoord&nbsp;<i id="password-show-field" class="fa-regular fa-eye-slash"></i><input id="password-field" name="laptop_owner_password"></label></div>
+            <div class="form-element"><label>Wachtwoord&nbsp;<i id="password-show-field" class="fa-regular fa-eye-slash"></i><input id="password-field"
+                                                                                                                                    name="laptop_owner_password"></label></div>
             <div class="form-element"><label><input type="checkbox" id="password-default-chk" name="laptop_owner_password_default">Standaard&nbsp;paswoord?</label></div>
         </div>
     </div>
+
+    <div class="form-row" id="spare-comment-field" hidden>
+        <p style="border-block-width: 2px; border-style: solid; padding: 10px; border-radius: 10px;">
+            Typ het label van de reservelaptop, schuine streep, serienummer.<br>
+            Het serienummer is <b>verplicht</b> als dit incident voor Signpost is!!<br>
+            bv: SPB2023-0234/LMT344FD </p>
+    </div>
+
     <div class="form-row">
         <div class="form-element">
             <label>Reserve laptop<input id="spare-field" name="spare_laptop_name"></label>
@@ -38,7 +47,7 @@
         <div class="form-element group-spare-laptop">
             <label><input type="checkbox" id="spare-charger-chk" name="charger">Lader?</label>
         </div>
-        <button id="spare-badge-scan" class="btn btn-success">Scan badge van reservelaptop</button>
+        <button id="spare-badge-scan" class="btn btn-success group-spare-laptop">Scan badge van reservelaptop</button>
     </div>
     <div class="form-row">
         <div class="form-element">
@@ -81,7 +90,7 @@
 
     </div>
 </form>
-    <form id="attachment-form">
+<form id="attachment-form">
     <input id="attachment-field" name="attachment_file" type="file" multiple hidden>
     <input id="incident-id-field" name="incident_id" hidden>
 </form>

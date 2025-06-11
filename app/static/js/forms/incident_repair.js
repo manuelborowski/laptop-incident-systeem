@@ -204,7 +204,9 @@ export class IncidentRepair {
         document.getElementById("laptop-code-input").addEventListener("click", (e) => {
             e.preventDefault();
             bootbox.prompt({
-                title: "Typ het label van de laptop, schuine streep, serienummer.<br>bv: SPB2023-0234/LMT344FD",
+                title: "Typ het label van de laptop, schuine streep, serienummer.<br>" +
+                    "Het serienummer is <b>verplicht</b> als dit incident voor Signpost is!!<br>" +
+                    "bv: SPB2023-0234/LMT344FD",
                 locale: "dutch",
                 callback: async res => {
                     if (res !== null) {
@@ -285,6 +287,7 @@ export class IncidentRepair {
         document.getElementById("type-spare-laptop-chk").addEventListener("click", e => {
             document.querySelectorAll(".group-spare-laptop").forEach(i => i.hidden = e.target.checked);
             this.spare_field.parentElement.classList.toggle("required", e.target.checked);
+            document.getElementById("spare-comment-field").hidden = !e.target.checked;
         });
 
         // if default password checked, disable the password field
@@ -437,7 +440,11 @@ export class IncidentRepair {
             if (document.getElementById("type-spare-laptop-chk").checked) {  // spare laptop
                 data.laptop_owner_name = this.meta.label.location[data.location];
                 data.laptop_owner_id = data.location;
-                data.laptop_name = data.spare_laptop_name;
+                if (data.spare_laptop_name.includes("/")) {
+                    [data.laptop_name, data.laptop_serial] = data.spare_laptop_name.split("/");
+                } else {
+                    data.laptop_name = data.spare_laptop_name;
+                }
                 data.spare_laptop_name = "NVT";
 
                 if (data.lis_badge_id === "" || data.laptop_owner_id === "" || data.laptop_name === "") {
