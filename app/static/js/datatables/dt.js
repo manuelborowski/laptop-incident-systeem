@@ -35,7 +35,9 @@ function checkbox_is_at_least_one_selected() {
     return nbr_checked !== 0
 }
 
-export function checkbox_get_ids() {return Array.from(document.querySelectorAll(".chbx_all:checked")).map(c => c.value);}
+export function checkbox_get_ids() {
+    return Array.from(document.querySelectorAll(".chbx_all:checked")).map(c => c.value);
+}
 
 export function clear_checked_boxes() {
     $(".chbx_all").prop('checked', false);
@@ -50,7 +52,9 @@ export const mouse_get_ids = mouse_event => {
     return ids;
 }
 
-export function datatable_row_data_from_id(id) {return ctx.table.row(`#${id}`).data();}
+export function datatable_row_data_from_id(id) {
+    return ctx.table.row(`#${id}`).data();
+}
 
 export const datatable_row_data_from_target = target => {
     return ctx.table.row(target.target.closest("tr")).data();
@@ -66,7 +70,7 @@ export function datatable_reload_table() {
     ctx.table.ajax.reload();
 }
 
-export const datatables_init = ({context_menu_items=[], filter_menu_items=[], button_menu_items=[], callbacks={}}) => {
+export const datatables_init = ({context_menu_items = [], filter_menu_items = [], button_menu_items = [], callbacks = {}}) => {
     ctx = {table_config, reload_table: datatable_reload_table}
     ctx.cell_to_color = "color_keys" in table_config ? table_config.cell_color.color_keys : null;
     ctx.suppress_cell_content = "color_keys" in table_config ? table_config.cell_color.supress_cell_content : null;
@@ -94,50 +98,68 @@ export const datatables_init = ({context_menu_items=[], filter_menu_items=[], bu
         $('<tfoot/>').append($("#datatable thead tr").clone())
     );
 
-    // check special options in the columns
-    $.each(ctx.table_config.template, function (i, v) {
-        //ellipsis
-        if ("ellipsis" in v) v.render = return_render_ellipsis(v.ellipsis.cutoff, v.ellipsis.wordbreak, true);
-        if ("bool" in v) v.render = function (data, type, full, meta) {return data === true ? "&#10003;" : "";};
-        if ("label" in v) v.render = function (data, type, full, meta) {return v.label.labels[data];}
+    const render_display = (data, typen, full, meta, v) => {
+        let values = [];
+        let color = null;
+        for (const f of v.fields) {
+            let value = full[f.field];
+            if ("colors" in f) color = f.colors[value];
+            if ("labels" in f) value = f.labels[value];
+            if ("bool" in f) value = value === true ? "&#10003;" : "";
+            values.push(value);
+        }
+        var template = values[0];
+        if ("template" in v) {
+            template = v.template;
+            for (let i = 0; i < values.length; i++) template = template.replaceAll(`%${i}%`, values[i]);
+        }
+        if (color) {
+            return `<div style="background:${color};">${template}</div>`
+        } else {
+            return template
+        }
+    }
+
+    const render = (v) => {
+        if ("ellipsis" in v) return_render_ellipsis(v.ellipsis.cutoff, v.ellipsis.wordbreak, true);
+
+        if ("bool" in v) return (data, type, full, meta) => {
+            return data === true ? "&#10003;" : "";
+        };
+        if ("label" in v) return (data, type, full, meta) => {
+            return v.label.labels[data];
+        }
         if ("color" in v) {
-            const render="render" in v ? v.render : null;
+            const render = "render" in v ? v.render : null;
             v.render = function (data, type, full, meta) {
                 if (render) data = render(data);
                 return `<div style="background:${v.color.colors[ctx.table.cell(meta.row, meta.col).data()]};">${data}</div>`
             }
         }
-        if ("less" in v) v.render = function (data, type, full, meta) {return data < v.less.than ? ("then" in v.less ? v.less.then : data)  : ("else" in v.less ? v.less.else : data);}
-        if ("display" in v) {
-            v.render = function (data, typen, full, meta) {
-                let values = [];
-                let color = null;
-                for (const f of v.display.fields) {
-                    let value = full[f.field];
-                    if ("labels" in f) value = f.labels[value];
-                    if ("colors" in f) color = f.colors[value];
-                    if ("bool" in f) value = value === true ? "&#10003;" : "";
-                    values.push(value);
-                }
-                var template = values[0];
-                if ("template" in v.display) {
-                    template = v.display.template;
-                    for (let i=0; i < values.length; i++) template = template.replaceAll(`%${i}%`, values[i]);
-                }
-                if (color) {
-                    return `<div style="background:${color};">${template}</div>`
-                } else {
-                    return template
-                }
-            }
+        if ("less" in v) return (data, type, full, meta) => {
+            return data < v.less.than ? ("then" in v.less ? v.less.then : data) : ("else" in v.less ? v.less.else : data);
         }
+
+        if ("display" in v) {
+            return (data, type, full, meta) =>  render_display(data, type, full, meta, v.display);
+        }
+
+        if ("equal" in v) {
+            return (data, type, full, meta) => data === v.equal.to ? render_display(data, type, full, meta, v.equal.then) : render_display(data, type, full, meta, v.equal.else);
+            }
+    };
+
+
+    // check special options in the columns
+    $.each(ctx.table_config.template, (i, v) => {
+        v.render = render(v);
         datatable_column2index[v.data] = i;
-    });
+    })
 
     // get data from server and send to datatables to render it
     let __datatable_data_cb = null;
     const data_from_server = (type, data) => {
-       busy_indication_off();
+        busy_indication_off();
         __datatable_data_cb(data);
     }
     socketio.subscribe_on_receive(`${ctx.table_config.view}-datatable-data`, data_from_server);
@@ -230,7 +252,9 @@ export const datatables_init = ({context_menu_items=[], filter_menu_items=[], bu
         ctx.table.draw();
     });
 
-    const update_cell_changed  =  data=>  {socketio.send_to_server(`${ctx.table_config.view}-cell-update`, data);}
+    const update_cell_changed = data => {
+        socketio.send_to_server(`${ctx.table_config.view}-cell-update`, data);
+    }
 
     const __cell_edit_changed_cb = ($dt_row, column_index, new_value, old_value) => {
         const value = ctx.table_config.template[column_index].celledit.value_type === 'int' ? parseInt(new_value) : new_value;

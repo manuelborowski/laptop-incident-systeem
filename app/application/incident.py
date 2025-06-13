@@ -119,6 +119,8 @@ def add(data):
         data["current_location"] = data["location"]
         incident = dl.incident.add(data)
         if incident:
+            return_msg = f"Incident {incident.id} toegevoegd"
+            return_status = "ok"
             if data["current_location"] != data["home_location"]:
                 __event(incident, "transition")
             # store some data in history
@@ -129,9 +131,17 @@ def add(data):
             history = dl.history.add(history_data)
             if incident.incident_type == "hardware":
                 ret = m4s.case_add(incident)
-                if ret["status"] != "ok": return ret
-        log.info(f'{sys._getframe().f_code.co_name}: incident added, {data}')
-        return {"data": {"status": True, "id": incident.id}}
+                if ret["status"] != "ok":
+                    history_data = {"incident_id": incident.id, "priority": incident.priority, "info": ret["msg"], "incident_type": incident.incident_type,
+                                    "incident_state": incident.incident_state, "current_location": incident.current_location, "current_incident_owner": incident.current_incident_owner, "time": incident.time, }
+                    history = dl.history.add(history_data)
+                    return_msg += f"<br> Opgepast: {ret['msg']}"
+                    return_status = "warning"
+
+            log.info(f'{sys._getframe().f_code.co_name}: incident added, {data}')
+            return {"data": {"status": return_status, "id": incident.id, "msg": return_msg}}
+        log.error(f'{sys._getframe().f_code.co_name}: incident could not be add')
+        return {"status": "error","msg": "Onbekende fout, incident niet toegevoegd"}
     except Exception as e:
         log.error(f'{sys._getframe().f_code.co_name}: {str(type(e))}, {e}')
         return {"status": "error", "msg": f"{str(type(e))}, {e}"}

@@ -84,6 +84,11 @@ class M4S:
 
     def case_add(self, incident):
         try:
+            # TEST BOROWSKI
+            # incident.m4s_reference = "warning"
+            # dl.incident.commit()
+            # return {"status": "error", "msg": "Onbekend probleem met M4S, waarschuw ICT"}
+
             m4s_test = app.config["M4S_TEST"] if "M4S_TEST" in app.config else False
             if m4s_test == True:
                 log.info("M4S test, no incident is added into M4S")
@@ -130,6 +135,8 @@ class M4S:
                 log.info(f'{sys._getframe().f_code.co_name}: inserted in m4s, lis-id/m4s-guid/m4s-reference: {incident.id}/{incident.m4s_guid}/{incident.m4s_reference}')
                 dl.incident.commit()
                 return {"status": "ok"}
+            incident.m4s_reference = "warning"
+            dl.incident.commit()
             log.error(f'{sys._getframe().f_code.co_name}: post cases returned {resp.status_code}')
             log.error(f'{sys._getframe().f_code.co_name}: error: {resp.text}')
             if "Request.SerialNumber" in resp.text: return {"status": "error", "msg": "Het serienummer ontbreekt"}

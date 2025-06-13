@@ -469,17 +469,15 @@ export class IncidentRepair {
             data.lis_badge_id = parseInt(data.lis_badge_id);
             if (data["incident_type"] !== "hardware") data["m4s_problem_type_guid"] = ""
             var resp = await fetch_post("incident.incident", data);
-            if (resp.data.status) {
-                if (this.attachments.length > 0) {
-                    document.getElementById("incident-id-field").value = resp.data.id;
-                    const data = new FormData();
-                    data.append("incident_id", resp.data.id);
-                    for (const file of this.attachments) data.append("attachment_file", file);
-                    const resp1 = await fetch(Flask.url_for("incident.attachment"), {method: 'POST', body: data});
-                    await resp1.json()
-                }
-                new AlertPopup("ok", `Incident ${resp.data.id} toegevoegd.`)
+            if (this.attachments.length > 0) {
+                document.getElementById("incident-id-field").value = resp.data.id;
+                const data = new FormData();
+                data.append("incident_id", resp.data.id);
+                for (const file of this.attachments) data.append("attachment_file", file);
+                const resp1 = await fetch(Flask.url_for("incident.attachment"), {method: 'POST', body: data});
+                await resp1.json()
             }
+            new AlertPopup(resp.data.status, resp.data.msg)
         }
         busy_indication_off();
         return true
