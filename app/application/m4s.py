@@ -85,6 +85,11 @@ class M4S:
     def case_add(self, incident):
         try:
             # TEST BOROWSKI
+            # if incident.m4s_reference == "warning":
+            #     incident.m4s_reference = "FSTEST"
+            #     incident.m4s_guid = "test-guid"
+            #     dl.incident.commit()
+            #     return {"status": "ok"}
             # incident.m4s_reference = "warning"
             # dl.incident.commit()
             # return {"status": "error", "msg": "Onbekend probleem met M4S, waarschuw ICT"}

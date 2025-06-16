@@ -154,8 +154,9 @@ from functools import wraps
 # 0.111: update api with respect to laptop-return
 # 0.112: spare-laptop-repair, make it possible to add serial number
 # 0.113: m4s specific, if a case could not be inserted in m4s, display warning to user and add warning in database.
+# 0.114: small update
 
-version = "0.113"
+version = "0.114"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

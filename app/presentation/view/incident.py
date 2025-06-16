@@ -249,6 +249,7 @@ class Config(DatatableConfig):
         # less: if the value is less than value of field "than", then replace with value of field "then" else with value of field "else"
         #   if field "then" or "else" are not used, return the original data.
         # display: apply mulitple renderers (if required) and combine into template (if required).
+        # equal: if-equal-to-then-else pattern.  Then and else are required and must be templates.  Colors have precedence over labels
         for column in template:
             if "data" in column:
                 if column["data"] == "incident_state" and column["name"] == "Status":
@@ -264,7 +265,7 @@ class Config(DatatableConfig):
                     column["label"] = {"labels": m4s_problem_labels}
                 if column["data"] == "m4s_reference":
                     column["equal"] = {"to": "warning",
-                                       "then": {"template": '%0%', "fields": [{"field": "m4s_reference", "colors": {"warning": "orange"}, "labels": {"warning": "Opgepast"}}]},
+                                       "then": {"template": '%0%', "fields": [{"field": "m4s_reference", "colors": {"warning": "orange"}, "labels": {"warning": "Waarschuwing"}}]},
                                        "else": {"template": '<a target="_blank" href="https://byod.signpost.be/incidents/%1%">%0%</a>', "fields": [{"field": "m4s_reference"}, {"field": "m4s_guid"}]}}
                 if column["data"] == "info":
                     column["ellipsis"] = {"cutoff": 30, "wordbreak": True}
