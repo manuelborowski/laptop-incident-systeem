@@ -430,7 +430,7 @@ export class IncidentRepair {
         } else {  // new incident
             let lis_badge_id_exist = [];
             if (data.lis_badge_id !== "") {
-                lis_badge_id_exist = await fetch_get("incident.incident", {filters: `lis_badge_id$=$${data.lis_badge_id},incident_state$!$closed,incident_state$!$repaired`});
+                lis_badge_id_exist = await fetch_get("incident.incident", {filters: `lis_badge_id$=$${data.lis_badge_id},incident_state$!$closed,incident_state$!$repaired,incident_state$!$cancelled`});
                 if (lis_badge_id_exist.length > 0) {
                     new AlertPopup("warning", "LIS badgenummer is al in gebruik")
                     busy_indication_off();

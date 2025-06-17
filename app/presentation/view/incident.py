@@ -236,6 +236,7 @@ class Config(DatatableConfig):
             "expecting": edit_button_template + history_button_template + close_button_template,
             "signpost": edit_button_template + history_button_template + close_button_template,
             "loaned": edit_button_template + history_button_template + message_button_template + close_button_template,
+            "cancelled": history_button_template,
             "closed": history_button_template
         }
 

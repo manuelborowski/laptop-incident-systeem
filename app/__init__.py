@@ -155,8 +155,9 @@ from functools import wraps
 # 0.112: spare-laptop-repair, make it possible to add serial number
 # 0.113: m4s specific, if a case could not be inserted in m4s, display warning to user and add warning in database.
 # 0.114: small update
+# 0.115: added state: cancelled
 
-version = "0.114"
+version = "0.115"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

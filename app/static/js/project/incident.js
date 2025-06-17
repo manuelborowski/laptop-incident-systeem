@@ -554,6 +554,13 @@ const filter_menu_items = [
         persistent: true
     },
     {
+        type: 'checkbox',
+        id: 'incident-state-cancelled',
+        label: 'Geannuleerd?',
+        default: false,
+        persistent: true
+    },
+    {
         type: 'select',
         id: 'incident-type',
         label: 'Type',

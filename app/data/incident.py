@@ -100,6 +100,8 @@ def pre_sql_filter(query, filters):
     for f in filters:
         if f['id'] == 'incident-state-closed' and not f['value']:
             query = query.filter(Incident.incident_state != "closed")
+        if f['id'] == 'incident-state-cancelled' and not f['value']:
+            query = query.filter(Incident.incident_state != "cancelled")
         if f['id'] == 'incident-owner-id' and f['value'] != 'all':
             query = query.filter(Incident.current_incident_owner == f['value'])
         if f['id'] == 'incident-state' and f['value'] != 'all':
