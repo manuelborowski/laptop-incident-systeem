@@ -156,8 +156,9 @@ from functools import wraps
 # 0.113: m4s specific, if a case could not be inserted in m4s, display warning to user and add warning in database.
 # 0.114: small update
 # 0.115: added state: cancelled
+# 0.116: repair of spare laptop -> hw issue -> check if info field is filled in
 
-version = "0.115"
+version = "0.116"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

@@ -447,7 +447,7 @@ export class IncidentRepair {
                 }
                 data.spare_laptop_name = "NVT";
 
-                if (data.lis_badge_id === "" || data.laptop_owner_id === "" || data.laptop_name === "") {
+                if (data.lis_badge_id === "" || data.laptop_owner_id === "" || data.laptop_name === "" || data.incident_type === "hardware" && (data.info === "" || data.m4s_category === "none")) {
                     new AlertPopup("warning", "Roodgekleurde velden invullen aub.")
                     busy_indication_off();
                     return false
