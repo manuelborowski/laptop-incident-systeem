@@ -1,0 +1,54 @@
+<link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+{{ form_css_file }}
+<form id="gone-form">
+    <div class="form-row" id="owner-row">
+        <div class="form-element">
+            <label class="required">Eigenaar<select class="repair-update-disabled" id="owner-field" name="laptop_owner_id" style="width: 90%"></select></label>
+        </div>
+        <button id="owner-badge-scan" class="btn btn-success  repair-update-hidden">Scan badge van eigenaar</button>
+    </div>
+    <div class="form-row">
+        <div class="form-element" style="min-width: 30%">
+            <label class="required">Laptop<select id="laptop-field" name="laptop_serial"></select></label>
+        </div>
+        <button id="laptop-code-input" class="btn btn-success">Laptop: typ label en serienummer</button>
+    </div>
+
+    <div class="form-row">
+        <div class="form-element">
+            <label>Reserve laptop<input id="spare-field" name="spare_laptop_name"></label>
+        </div>
+        <div class="form-element group-spare-laptop">
+            <label><input type="checkbox" id="spare-charger-chk" name="charger">Lader?</label>
+        </div>
+        <button id="spare-badge-scan" class="btn btn-success group-spare-laptop">Scan badge van reservelaptop</button>
+    </div>
+    <div class="form-row">
+        <div class="form-element"><label>Locatie<select id="location-field" name="location"></select></label></div>
+        <div class="form-element"><label>Status<select id="incident-state-field" name="incident_state"></select></label></div>
+    </div>
+    <div class="form-row">
+        <div class="form-element">
+            <label>Info<textarea id="info-field" rows="6" cols="80" style="line-height: 1" name="info"></textarea></label>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-element">
+            <button id="upload-attachment-btn" class="btn btn-success">Bijlagen uploaden</button>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-element">
+            <div style="display: flex; flex-direction: column">
+                <p style="margin-top: 10px; margin-bottom: 0"><b>Bijlagen:</b></p>
+                <p style="margin-top: 0; margin-bottom: 0" id="attachment-list"></p>
+            </div>
+        </div>
+
+    </div>
+</form>
+<form id="attachment-form">
+    <input id="attachment-field" name="attachment_file" type="file" multiple hidden>
+    <input id="incident-id-field" name="incident_id" hidden>
+</form>

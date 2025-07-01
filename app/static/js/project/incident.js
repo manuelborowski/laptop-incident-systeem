@@ -4,6 +4,7 @@ import {badge_raw2hex} from "../common/rfid.js";
 import {AlertPopup} from "../common/popup.js";
 import {IncidentRepair} from "../forms/incident_repair.js";
 import {autologout_disable, autologout_enable} from "../base.js";
+import {IncidentGone} from "../forms/incident_gone.js";
 
 const meta = await fetch_get("incident.meta")
 
@@ -164,6 +165,45 @@ const __loan_form = async (incident = null, history = null) => {
                     await form_populate(Object.assign(meta.default, {category: "loan", incident_state: "first", incident_type: "shortloan"}), meta);
                 }
             },
+        });
+    }
+}
+
+const __gone_form = async (incident = null, history = "") => {
+    let gone = null;
+    const form = await fetch_get("incident.form", {form: "gone"});
+    form.template = form.template.replace("{{ form_css_file }}", "<link href=\"static/css/form.css\" rel=\"stylesheet\">\n");
+    let bootbox_dialog = null;
+    if (form) {
+        let owner_field = null;
+        bootbox_dialog = bootbox.dialog({
+            title: "Laptop is verloren of gestolen",
+            size: "xl",
+            message: form.template,
+            buttons: {
+                confirm: {label: "Bewaar", className: "btn-primary", callback: () => false},
+                cancel: {
+                    label: "Annuleer", className: "btn-secondary", callback: async () => {
+                        if (incident) datatable_reload_table();
+                        autologout_enable();
+                    }
+                },
+            },
+            onShown: async () => {
+                gone = new IncidentGone({meta, incident, history, dropdown_parent: $(".bootbox")});
+                await gone.display()
+                if (current_user.level < 3) document.querySelector(".bootbox-accept").hidden = true; // regular users cannot save changes
+                autologout_disable();
+            },
+        });
+
+        // Confirm button pushed
+        document.querySelector(".bootbox .btn-primary").addEventListener("click", async e => {
+            if (await gone.save()) {
+                datatable_reload_table();
+                if (bootbox_dialog) bootbox_dialog.modal("hide");
+                autologout_enable();
+            }
         });
     }
 }
@@ -485,6 +525,12 @@ const button_menu_items = [
         cb: () => __return_form()
     },
     {
+        type: 'button',
+        id: 'laptopgone-new',
+        label: 'Laptop verdwenen',
+        cb: () => __gone_form()
+    },
+    {
         type: 'text',
         id: 'default-location',
         label: 'Locatie',
@@ -579,6 +625,8 @@ const __table_loaded = () => {
             await __repair_form(incident, history);
         } else if (incident.category === "return") {
             await __return_form(incident, history);
+        } else if (incident.category === "gone") {
+            await __gone_form(incident, history);
         } else {
             await __loan_form(incident, history)
         }

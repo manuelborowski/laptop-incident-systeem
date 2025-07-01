@@ -57,7 +57,7 @@ def incident():
         log.error(f'{sys._getframe().f_code.co_name}: {e}')
         return fetch_return_error()
 
-@bp_incident.route('/incident/attachment', methods=['POST', "GET", "DELETE"])
+@bp_incident.route('/incident/attachment', methods=['POST', "GET", "DELETE", "UPDATE"])
 @login_required
 def attachment():
     try:
@@ -65,11 +65,15 @@ def attachment():
         if request.method == "POST":
             files = request.files.getlist("attachment_file")
             incident_id = request.form.get("incident_id")
-            al.attachment.add(incident_id, files)
+            to_m4s = request.form.get("to_m4s") == "true"
+            al.attachment.add(incident_id, files, to_m4s)
         if request.method == "GET":
             ret = al.attachment.get(request.args["id"])
         if request.method == "DELETE":
             al.attachment.delete(request.args["ids"].split(","))
+        if request.method == "UPDATE":
+            data = json.loads(request.data)
+            al.attachment.update(data)
         return json.dumps(ret)
     except Exception as e:
         log.error(f'{sys._getframe().f_code.co_name}: {e}')
@@ -192,6 +196,8 @@ def form():
                 template = open(pathlib.Path("app/presentation/template/forms/setting.html")).read()
             if form == "return":
                 template = open(pathlib.Path("app/presentation/template/forms/return.html")).read()
+            if form == "gone":
+                template = open(pathlib.Path("app/presentation/template/forms/gone.html")).read()
             return {"template": template, "defaults": [], "data": optional}
     except Exception as e:
         log.error(f'{sys._getframe().f_code.co_name}: Exception, {e}')
@@ -236,6 +242,8 @@ class Config(DatatableConfig):
             "expecting": edit_button_template + history_button_template + close_button_template,
             "signpost": edit_button_template + history_button_template + close_button_template,
             "loaned": edit_button_template + history_button_template + message_button_template + close_button_template,
+            "lost": edit_button_template + history_button_template + message_button_template + close_button_template,
+            "stolen": edit_button_template + history_button_template + message_button_template + close_button_template,
             "cancelled": history_button_template,
             "closed": history_button_template
         }

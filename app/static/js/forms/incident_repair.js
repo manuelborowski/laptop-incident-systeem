@@ -1,7 +1,6 @@
 import {badge_raw2hex} from "../common/rfid.js";
 import {busy_indication_off, busy_indication_on, fetch_delete, fetch_get, fetch_post, fetch_update, form_populate} from "../common/common.js";
 import {AlertPopup} from "../common/popup.js";
-import {qr_decode} from "../common/qr.js";
 
 export class IncidentRepair {
     constructor({meta = null, incident = null, history = "", dropdown_parent = null, callbacks = {}}) {
@@ -14,6 +13,110 @@ export class IncidentRepair {
         this.__stored_password = this.incident ? this.incident.laptop_owner_password : "";
         this.attachments = [];
         this.attachments_to_delete = [];
+    }
+
+    __attachment_add_view_event_listener = () => {
+        this.attachment_list.querySelectorAll(".attachment-view").forEach(a => a.addEventListener("click", async e => {
+            busy_indication_on();
+            const filename = e.target.innerHTML;
+            const attachment = this.attachments.find(a => a.name === filename);
+            const data = await fetch_get("incident.attachment", {id: attachment.id});
+            if (attachment.type.includes("image")) {
+                const base64_image = `data:${attachment.type};base64, ` + data.data.file;
+                const new_tab = window.open();
+                if (new_tab) {
+                    new_tab.document.write(`<img src="${base64_image}" alt="Base64 Image">`);
+                    new_tab.document.write(`<title>${filename}</title>`);
+                } else {
+                    alert("Popup blocked! Please allow popups for this site.");
+                }
+            } else if (attachment.type.includes("video")) {
+                const new_tab = window.open();
+                if (new_tab) {
+                    const base64_mp4 = `data:${attachment.type};base64, ` + data.data.file;
+                    new_tab.document.write(`<title>${filename}</title>`);
+                    new_tab.document.write(`
+                                <html>
+                                  <body style="margin:0; display:flex; justify-content:center; align-items:center; height:100vh; background-color:#000;">
+                                    <video controls autoplay style="max-width:100%; max-height:100vh;">
+                                      <source src="${base64_mp4}" type="${attachment.type}">
+                                      Your browser does not support the video tag.
+                                    </video>
+                                  </body>
+                                </html>
+                              `);
+                    new_tab.document.close();
+                } else {
+                    alert("Popup blocked! Please allow popups for this site.");
+                }
+            } else { // default: download
+                const linkSource = `data:application/pdf;base64,${data.data.file}`;
+                const downloadLink = document.createElement("a");
+                downloadLink.href = linkSource;
+                downloadLink.download = filename;
+                downloadLink.click();
+            }
+            busy_indication_off();
+        }));
+    }
+
+    __attachment_add_delete_event_listener = () => {
+        this.attachment_list.querySelectorAll(".btn-attachment-remove").forEach(i => i.addEventListener("click", e => {
+                e.preventDefault();
+                const filename = e.target.closest("a").dataset.id;
+                const find_file = this.attachments.find(i => i.name.replaceAll(" ", "") === filename);
+                if (find_file && "id" in find_file) this.attachments_to_delete.push(find_file.id);
+                this.attachments = this.attachments.filter(i => i.name.replaceAll(" ", "") !== filename);
+                // this.attachment_list.innerHTML = "";
+                this.__show_attachment_list(this.attachments, true)
+                // for (const file of this.attachments) {
+                //     this.attachment_list.innerHTML += this.ATTACHMENT_LINE_TEMPLATE(file)
+                // }
+                // __attachment_add_delete_event_listener();
+                // __attachment_add_view_event_listener();
+                // __attachment_add_m4s_check_event_listener();
+            })
+        );
+    }
+
+    __attachment_add_m4s_check_event_listener = () => {
+        this.attachment_list.querySelectorAll(".check-attachment-m4s").forEach(i => i.addEventListener("click", e => {
+                const filename = e.target.dataset.id;
+                const find_file = this.attachments.find(i => i.name.replaceAll(" ", "") === filename);
+                if (find_file) {
+                    if (e.target.checked) {
+                        find_file.to_m4s = "YES";
+                    } else {
+                        delete find_file.to_m4s;
+                    }
+                }
+            }
+        ));
+    }
+
+    ATTACHMENT_LINE_TEMPLATE = (file) => {
+        const in_m4s_database = "m4s_reference" in file && file.m4s_reference !== "";
+        const m4s_enable = this.lis_type_field.value === "hardware";
+        let line = `<div class="form-element group-spare-laptop">
+                    <input type="checkbox" class="check-attachment-m4s" data-id=${file.name.replaceAll(" ", "")} style="padding:2px;line-height:1;" ${in_m4s_database ? "checked" : ""} ${(in_m4s_database || !m4s_enable) ? "disabled" : ""}>M4S?&nbsp;`
+        if (!in_m4s_database) line += `<a type="button" class="btn-attachment-remove btn btn-danger" data-id=${file.name.replaceAll(" ", "")} style="padding:2px;line-height:1;" : ""}>
+                    <i class="fa-solid fa-xmark" title="Bijlage verwijderen"></i></a>&nbsp;`
+        if ("id" in file) {
+            line += `<a class="attachment-view">${file.name}</a><br><div>`;
+        } else {
+            line += file.name + "<br><div>";
+        }
+        return line
+    }
+
+    __show_attachment_list = (list, clear_list = false) => {
+        if (clear_list) this.attachment_list.innerHTML = "";
+        for (const attachment of list) {
+            this.attachment_list.innerHTML += this.ATTACHMENT_LINE_TEMPLATE(attachment)
+        }
+        this.__attachment_add_delete_event_listener();
+        this.__attachment_add_view_event_listener();
+        this.__attachment_add_m4s_check_event_listener();
     }
 
     // Depending on the incident type hide/display specific elements of the form
@@ -33,19 +136,8 @@ export class IncidentRepair {
             this.m4s_problem_type_guid_field.parentElement.classList.remove("required");
             this.location_field.style.background = "white";
         }
-    }
-
-    __state_select_set = () => {
-        const next_state = {
-            "software": {started: ["transition", "repaired"], transition: ["started"], repaired: ["started", "transition", "closed"],},
-            "reinstall": {started: ["transition", "repaired"], transition: ["started"], repaired: ["started", "transition", "closed"],},
-            "hardware": {started: ["repaired"], repaired: ["started", "closed"]},
-            "newlaptop": {started: ["repaired"], repaired: ["started", "closed"]}
-        }
-        this.incident_state_field.innerHTML = "";
-        for (const state of [this.incident.incident_state].concat(next_state[this.incident.incident_type][this.incident.incident_state])) {
-            this.incident_state_field.add(new Option(this.meta.label.incident_state[state], state, this.incident.incident_state === state));
-        }
+        // rebuild the list of attachments, i.e. enable or disable checkboxes
+        this.__show_attachment_list(this.attachments, true);
     }
 
     __password_field_hide = (hide = true) => {
@@ -86,73 +178,6 @@ export class IncidentRepair {
         this.m4s_problem_type_guid_field = document.getElementById("m4s-problem-type-guid-field");
         this.owner_field = $("#owner-field");
         this.attachment_list = document.getElementById("attachment-list");
-
-        const __attachment_add_view_event_listener = () => {
-            this.attachment_list.querySelectorAll(".attachment-view").forEach(a => a.addEventListener("click", async e => {
-                busy_indication_on();
-                const filename = e.target.innerHTML;
-                const attachment = this.attachments.find(a => a.name === filename);
-                const data = await fetch_get("incident.attachment", {id: attachment.id});
-                if (attachment.type.includes("image")) {
-                    const base64_image = `data:${attachment.type};base64, ` + data.data.file;
-                    const new_tab = window.open();
-                    if (new_tab) {
-                        new_tab.document.write(`<img src="${base64_image}" alt="Base64 Image">`);
-                        new_tab.document.write(`<title>${filename}</title>`);
-                    } else {
-                        alert("Popup blocked! Please allow popups for this site.");
-                    }
-                } else if (attachment.type.includes("video")) {
-                    const new_tab = window.open();
-                    if (new_tab) {
-                        const base64_mp4 = `data:${attachment.type};base64, ` + data.data.file;
-                        new_tab.document.write(`<title>${filename}</title>`);
-                        new_tab.document.write(`
-                                <html>
-                                  <body style="margin:0; display:flex; justify-content:center; align-items:center; height:100vh; background-color:#000;">
-                                    <video controls autoplay style="max-width:100%; max-height:100vh;">
-                                      <source src="${base64_mp4}" type="${attachment.type}">
-                                      Your browser does not support the video tag.
-                                    </video>
-                                  </body>
-                                </html>
-                              `);
-                        new_tab.document.close();
-                    } else {
-                        alert("Popup blocked! Please allow popups for this site.");
-                    }
-                } else { // default: download
-                    const linkSource = `data:application/pdf;base64,${data.data.file}`;
-                    const downloadLink = document.createElement("a");
-                    downloadLink.href = linkSource;
-                    downloadLink.download = filename;
-                    downloadLink.click();
-                }
-                busy_indication_off();
-            }));
-        }
-
-        const __attachment_add_delete_event_listener = () => {
-            this.attachment_list.querySelectorAll(".btn-attachment-remove").forEach(i => i.addEventListener("click", e => {
-                    e.preventDefault();
-                    const filename = e.target.closest("a").dataset.id;
-                    const find_file = this.attachments.find(i => i.name.replaceAll(" ", "") === filename);
-                    if (find_file && "id" in find_file) this.attachments_to_delete.push(find_file.id);
-                    this.attachments = this.attachments.filter(i => i.name.replaceAll(" ", "") !== filename);
-                    this.attachment_list.innerHTML = "";
-                    for (const file of this.attachments) {
-                        this.attachment_list.innerHTML += `<a type="button" class="btn-attachment-remove btn btn-danger" data-id=${file.name.replaceAll(" ", "")} style="padding:2px;line-height:1;"><i class="fa-solid fa-xmark" title="Bijlage verwijderen"></i></a></div>&nbsp;`
-                        if ("id" in file) {
-                            this.attachment_list.innerHTML += `<a class="attachment-view">${file.name}</a><br>`;
-                        } else {
-                            this.attachment_list.innerHTML += file.name + "<br>";
-                        }
-                    }
-                    __attachment_add_delete_event_listener();
-                    __attachment_add_view_event_listener();
-                })
-            );
-        }
 
         // Scan LIS badge
         document.getElementById("lis-badge-scan").addEventListener("click", (e) => {
@@ -252,12 +277,9 @@ export class IncidentRepair {
         // upload attachments, called when the file select dialog closes.
         document.getElementById("attachment-field").addEventListener("change", e => {
             for (const file of e.target.files) {
-                this.attachment_list.innerHTML += `<a type="button" class="btn-attachment-remove btn btn-danger" data-id=${file.name.replaceAll(" ", "")} style="padding:2px;line-height:1;"><i class="fa-solid fa-xmark" title="Bijlage verwijderen"></i></a></div>&nbsp;`
-                this.attachment_list.innerHTML += file.name + "<br>";
                 this.attachments.push(file);
             }
-            __attachment_add_delete_event_listener();
-            __attachment_add_view_event_listener();
+            this.__show_attachment_list(e.target.files)
         });
 
         // when the owner field changes, get the associated laptops and populate the laptop field
@@ -351,13 +373,7 @@ export class IncidentRepair {
             const attachments = await fetch_get("incident.attachment_meta", {incident_id: this.incident.id});
             if (attachments.data.length > 0) {
                 this.attachments = [...attachments.data];
-
-                for (const file of this.attachments) {
-                    this.attachment_list.innerHTML += `<a type="button" class="btn-attachment-remove btn btn-danger" data-id=${file.name.replaceAll(" ", "")} style="padding:2px;line-height:1;"><i class="fa-solid fa-xmark" title="Bijlage verwijderen"></i></a></div>&nbsp;`
-                    this.attachment_list.innerHTML += `<a class="attachment-view">${file.name}</a><br>`;
-                }
-                __attachment_add_delete_event_listener();
-                __attachment_add_view_event_listener();
+                this.__show_attachment_list(this.attachments)
             }
 
             document.querySelectorAll(".repair-update-hidden").forEach(i => i.hidden = true);
@@ -384,6 +400,7 @@ export class IncidentRepair {
         // default hide the password when the incident is being updated
         this.__password_field_hide(this.incident_update);
 
+        // Type of repair changed
         this.lis_type_field.addEventListener("change", async e => {
             this.__display_elements(e.target.value);
             // Update state-select-optionss, depending on type
@@ -415,18 +432,22 @@ export class IncidentRepair {
             // check for new or deleted attachments
             if (this.attachments_to_delete.length > 0) await fetch_delete("incident.attachment", {ids: this.attachments_to_delete.join(",")})
             if (this.attachments.length > 0) {
-                const data = new FormData();
-                data.append("incident_id", this.incident.id);
-                for (const file of this.attachments) {
-                    if ("id" in file) continue; // skip, already in database
-                    data.append("attachment_file", file);
-                }
-                if (data.has("attachment_file")) {
-                    const resp1 = await fetch(Flask.url_for("incident.attachment"), {method: 'POST', body: data});
-                    await resp1.json();
+                document.getElementById("incident-id-field").value = this.incident.id;
+                for (const attachment of this.attachments) {
+                    if (!("id" in attachment)) { //New attachment, save to db and m4s (if appropriate)
+                        const data = new FormData();
+                        data.append("incident_id", this.incident.id);
+                        data.append("to_m4s", ("to_m4s" in attachment).toString())
+                        data.append("attachment_file", attachment);
+                        const resp1 = await fetch(Flask.url_for("incident.attachment"), {method: 'POST', body: data});
+                        await resp1.json()
+                    } else if ("to_m4s" in attachment) { // Attachment already in db, put in m4s as well
+                        const data = {id: attachment.id, to_m4s: true}
+                        await fetch_update("incident.attachment", data);
+
+                    }
                 }
             }
-
         } else {  // new incident
             let lis_badge_id_exist = [];
             if (data.lis_badge_id !== "") {
@@ -468,14 +489,17 @@ export class IncidentRepair {
             data.category = "repair";
             data.lis_badge_id = parseInt(data.lis_badge_id);
             if (data["incident_type"] !== "hardware") data["m4s_problem_type_guid"] = ""
-            var resp = await fetch_post("incident.incident", data);
+            const resp = await fetch_post("incident.incident", data);
             if (this.attachments.length > 0) {
                 document.getElementById("incident-id-field").value = resp.data.id;
-                const data = new FormData();
-                data.append("incident_id", resp.data.id);
-                for (const file of this.attachments) data.append("attachment_file", file);
-                const resp1 = await fetch(Flask.url_for("incident.attachment"), {method: 'POST', body: data});
-                await resp1.json()
+                for (const attachment of this.attachments) {
+                    const data = new FormData();
+                    data.append("incident_id", resp.data.id);
+                    data.append("to_m4s", ("to_m4s" in attachment).toString())
+                    data.append("attachment_file", attachment);
+                    const resp1 = await fetch(Flask.url_for("incident.attachment"), {method: 'POST', body: data});
+                    await resp1.json()
+                }
             }
             new AlertPopup(resp.data.status, resp.data.msg)
         }

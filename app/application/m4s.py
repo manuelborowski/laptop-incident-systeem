@@ -53,35 +53,6 @@ class M4S:
         except Exception as e:
             log.error(f'{sys._getframe().f_code.co_name}: {e}')
 
-
-    def problem_types_get_from_m4s(self):
-        try:
-            self.init_bearer()
-            url = app.config["M4S_API_URL"]
-            headers = {"Authorization": f"Bearer {self.bearer_token}"}
-            resp = requests.get(f'{url}/field-service/problem-types', headers=headers)
-            if resp.status_code == 200:
-                resp = json.loads(resp.text)
-                if "items" in resp:
-                    return resp["items"]
-            log.error(f'{sys._getframe().f_code.co_name}: returned status code {resp.status_code}')
-        except Exception as e:
-            log.error(f'{sys._getframe().f_code.co_name}: {e}')
-        return []
-
-    def problem_type_get(self):
-        types = dl.m4s.get_m()
-        categories = {}
-        for type in types:
-            if not type.category: continue
-            category = type.category.capitalize()
-            if category not in categories:
-                categories[category] = [{"label": type.problem.capitalize(), "value": type.guid}]
-            else:
-                categories[category].append({"label": type.problem.capitalize(), "value": type.guid})
-        [v.sort(key=lambda x: x["label"]) for _, v in categories.items()]
-        return categories
-
     def case_add(self, incident):
         try:
             # TEST BOROWSKI
@@ -146,10 +117,66 @@ class M4S:
             log.error(f'{sys._getframe().f_code.co_name}: error: {resp.text}')
             if "Request.SerialNumber" in resp.text: return {"status": "error", "msg": "Het serienummer ontbreekt"}
             if "Request.ProblemTypeGuid" in resp.text: return {"status": "error", "msg": "De M4S categorie/probleem ontbreekt"}
+            if "Description" in resp.text: return {"status": "error", "msg": "Het infoveld moet ingevuld zijn"}
             return {"status": "error", "msg": "Onbekend probleem met M4S, waarschuw ICT"}
         except Exception as e:
             log.error(f'{sys._getframe().f_code.co_name}: {str(type(e))}, {e}')
             return {"status": "error", "msg": f"Onbekend probleem met M4S, waarschuw ICT.<br>{str(type(e))}, {e}"}
+
+    def case_file_add(self, incident_id, filename, file_data, file_type):
+        try:
+            incident = dl.incident.get(("id", "=", incident_id))
+            if not incident:
+                log.error(f'{sys._getframe().f_code.co_name}: error: incident not found: {incident_id}')
+                return {"status": "error", "msg": "Incident niet gevonden"}
+            if not incident.m4s_guid:
+                log.error(f'{sys._getframe().f_code.co_name}: error: incident has no m4s_guid : {incident}')
+                return {"status": "error", "msg": "Incident heeft geen M4S case"}
+
+            self.init_bearer()
+            url = app.config["M4S_API_URL"]
+            headers = {"Authorization": f"Bearer {self.bearer_token}", 'Accept': 'application/json'}
+            resp = requests.post(f"{url}/field-service/cases/{incident.m4s_guid}/files", headers=headers, files={"files":  (filename, file_data, file_type)})
+            if resp.status_code == 200:
+                m4s_reference = json.loads(resp.text)[0]
+                log.info(f'{sys._getframe().f_code.co_name}: inserted file in m4s case, lis-id/m4s-guid/m4s-reference: {incident.id}/{incident.m4s_guid}/{m4s_reference}')
+                return {"status": "ok", "m4s_reference": m4s_reference}
+            log.error(f'{sys._getframe().f_code.co_name}: post files returned {resp.status_code}')
+            log.error(f'{sys._getframe().f_code.co_name}: error: {resp.text}')
+            return {"status": "error", "msg": "Onbekend probleem met M4S, waarschuw ICT"}
+        except Exception as e:
+            log.error(f'{sys._getframe().f_code.co_name}: {str(type(e))}, {e}')
+            return {"status": "error", "msg": f"Onbekend probleem met M4S, waarschuw ICT.<br>{str(type(e))}, {e}"}
+
+
+    def problem_types_get_from_m4s(self):
+        try:
+            self.init_bearer()
+            url = app.config["M4S_API_URL"]
+            headers = {"Authorization": f"Bearer {self.bearer_token}"}
+            resp = requests.get(f'{url}/field-service/problem-types', headers=headers)
+            if resp.status_code == 200:
+                resp = json.loads(resp.text)
+                if "items" in resp:
+                    return resp["items"]
+            log.error(f'{sys._getframe().f_code.co_name}: returned status code {resp.status_code}')
+        except Exception as e:
+            log.error(f'{sys._getframe().f_code.co_name}: {e}')
+        return []
+
+    def problem_type_get(self):
+        types = dl.m4s.get_m()
+        categories = {}
+        for type in types:
+            if not type.category: continue
+            category = type.category.capitalize()
+            if category not in categories:
+                categories[category] = [{"label": type.problem.capitalize(), "value": type.guid}]
+            else:
+                categories[category].append({"label": type.problem.capitalize(), "value": type.guid})
+        [v.sort(key=lambda x: x["label"]) for _, v in categories.items()]
+        return categories
+
 
 
 

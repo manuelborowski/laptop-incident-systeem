@@ -157,8 +157,9 @@ from functools import wraps
 # 0.114: small update
 # 0.115: added state: cancelled
 # 0.116: repair of spare laptop -> hw issue -> check if info field is filled in
+# 0.117: add checkbox to push attachment to m4s.  At the moment, it is possible to push images only.
 
-version = "0.116"
+version = "0.117"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

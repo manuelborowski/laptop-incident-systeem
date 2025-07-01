@@ -16,7 +16,7 @@ class Attachment(db.Model, SerializerMixin):
     incident_id = db.Column(db.Integer)
     name = db.Column(db.String(256), default='')
     type = db.Column(db.String(256), default='')
-    file_id = db.Column(db.String(256), default='')
+    m4s_reference = db.Column(db.String(256), default='')
 
 
 def add(data = {}):
