@@ -148,7 +148,6 @@ class M4S:
             log.error(f'{sys._getframe().f_code.co_name}: {str(type(e))}, {e}')
             return {"status": "error", "msg": f"Onbekend probleem met M4S, waarschuw ICT.<br>{str(type(e))}, {e}"}
 
-
     def problem_types_get_from_m4s(self):
         try:
             self.init_bearer()
@@ -176,10 +175,6 @@ class M4S:
                 categories[category].append({"label": type.problem.capitalize(), "value": type.guid})
         [v.sort(key=lambda x: x["label"]) for _, v in categories.items()]
         return categories
-
-
-
-
 
 m4s = M4S()
 

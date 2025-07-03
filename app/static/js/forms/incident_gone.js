@@ -1,7 +1,6 @@
 import {badge_raw2hex} from "../common/rfid.js";
-import {busy_indication_off, busy_indication_on, fetch_delete, fetch_get, fetch_post, fetch_update, form_populate} from "../common/common.js";
+import {busy_indication_off, busy_indication_on, fetch_get, fetch_post, fetch_update, form_populate} from "../common/common.js";
 import {AlertPopup} from "../common/popup.js";
-import {qr_decode} from "../common/qr.js";
 
 export class IncidentGone {
     constructor({meta = null, incident = null, history = "", dropdown_parent = null, callbacks = {}}) {
@@ -12,13 +11,16 @@ export class IncidentGone {
         this.dropdown_parent = dropdown_parent;
         this.callbacks = callbacks;
         this.attachments = [];
-        this.attachments_to_delete = [];
     }
 
+    M4S_STOLEN_GUID = "19e7741d-0311-11ef-ba05-000d3add9f94";
+
+    // If the attachment is not in m4s yet, it still can be removed, else not.
+    // One an attachment is saved (has an id), it can be previewed
     ATTACHMENT_LINE_TEMPLATE = (file) => {
-        let line = `<div class="form-element group-spare-laptop">
-                    <input type="checkbox" data-id=${file.name.replaceAll(" ", "")} style="padding:2px;line-height:1;">M4S?&nbsp;
-                    <a type="button" class="btn-attachment-remove btn btn-danger" data-id=${file.name.replaceAll(" ", "")} style="padding:2px;line-height:1;">
+        const in_m4s_database = "m4s_reference" in file && file.m4s_reference !== "";
+        let line = `<div class="form-element"> `
+        if (!in_m4s_database) line += `<a type="button" class="btn-attachment-remove btn btn-danger" data-id=${file.name.replaceAll(" ", "")} style="padding:2px;line-height:1;" : ""}>
                     <i class="fa-solid fa-xmark" title="Bijlage verwijderen"></i></a>&nbsp;`
         if ("id" in file) {
             line += `<a class="attachment-view">${file.name}</a><br><div>`;
@@ -29,13 +31,8 @@ export class IncidentGone {
     }
 
     display = async () => {
-        this.location_field = document.getElementById("location-field");
         this.incident_state_field = document.getElementById("incident-state-field");
-        this.lis_type_field = document.getElementById("lis-type-field");
-        this.info_field = document.getElementById("info-field");
         this.spare_field = document.getElementById("spare-field");
-        this.m4s_category_field = document.getElementById("m4s-category-field");
-        this.m4s_problem_type_guid_field = document.getElementById("m4s-problem-type-guid-field");
         this.owner_field = $("#owner-field");
         this.attachment_list = document.getElementById("attachment-list");
 
@@ -89,16 +86,10 @@ export class IncidentGone {
                     e.preventDefault();
                     const filename = e.target.closest("a").dataset.id;
                     const find_file = this.attachments.find(i => i.name.replaceAll(" ", "") === filename);
-                    if (find_file && "id" in find_file) this.attachments_to_delete.push(find_file.id);
                     this.attachments = this.attachments.filter(i => i.name.replaceAll(" ", "") !== filename);
                     this.attachment_list.innerHTML = "";
                     for (const file of this.attachments) {
                         this.attachment_list.innerHTML += this.ATTACHMENT_LINE_TEMPLATE(file);
-                        // if ("id" in file) {
-                        //     this.attachment_list.innerHTML += `<a class="attachment-view">${file.name}</a><br>`;
-                        // } else {
-                        //     this.attachment_list.innerHTML += file.name + "<br>";
-                        // }
                     }
                     __attachment_add_delete_event_listener();
                     __attachment_add_view_event_listener();
@@ -234,20 +225,22 @@ export class IncidentGone {
             this.incident.location = this.incident.current_location;
             await form_populate(this.incident, this.meta);
             this.owner_field_options = [{id: this.incident.laptop_owner_id, text: this.incident.laptop_owner_name}];
+            this.incident_type = this.incident.incident_type;
 
             // Get attachments
             const attachments = await fetch_get("incident.attachment_meta", {incident_id: this.incident.id});
             if (attachments.data.length > 0) {
                 this.attachments = [...attachments.data];
-
                 for (const file of this.attachments) {
                     this.attachment_list.innerHTML += this.ATTACHMENT_LINE_TEMPLATE(file);
-                    // this.attachment_list.innerHTML += `<a class="attachment-view">${file.name}</a><br>`;
                 }
                 __attachment_add_delete_event_listener();
                 __attachment_add_view_event_listener();
+                document.querySelectorAll(".group-attachment").forEach(g => g.hidden = false);
             }
 
+            document.querySelectorAll(".gone-update-hidden").forEach(i => i.hidden = true);
+            document.querySelectorAll(".gone-update-disabled").forEach(i => i.disabled = true);
             document.querySelectorAll(".required").forEach(i => i.classList.toggle("required"));
         } else { // new gone
             const defaults = Object.assign(this.meta.default, {incident_state: "created", incident_type: "lost", category: "gone"}); // clear password and lis field
@@ -257,6 +250,7 @@ export class IncidentGone {
             const staff = await fetch_get("staff.staff", {fields: "naam,voornaam,code"})
             const staff_data = staff ? staff.map(e => ({id: "personeel-" + e.code, text: `${e.naam} ${e.voornaam}`})) : []
             this.owner_field_options = [{id: "", text: "Selecteer een leerling of leerkracht"}].concat(student_data.concat(staff_data));
+            this.incident_type = "lost";
         }
 
         // select2 field has it's own way of adding options
@@ -264,6 +258,11 @@ export class IncidentGone {
         let select2_config = {data: this.owner_field_options, width: "resolve"};
         if (this.dropdown_parent) select2_config.dropdownParent = this.dropdown_parent;
         await this.owner_field.select2(select2_config);
+
+        this.incident_state_field.addEventListener("change", async e => {
+            document.querySelectorAll(".group-attachment").forEach(g => g.hidden = e.target.value !== "stolen");
+            if (["lost", "stolen"].includes(e.target.value)) this.incident_type = e.target.value;
+        });
     }
 
     save = async () => {
@@ -273,33 +272,34 @@ export class IncidentGone {
         const data = Object.fromEntries(form_data)
         // checkboxes are present only when selected and have the value "on" => convert
         document.getElementById("gone-form").querySelectorAll("input[type='checkbox']").forEach(c => data[c.name] = c.name in data)
+
+        // in case of a stolen laptop, at least 1 attachment is required
+        if (this.incident_type === "stolen" && this.attachments.length < 1) {
+            new AlertPopup("warning", "Opgepast, bij diefstal steeds een PV opladen aub");
+            busy_indication_off();
+            return false
+        }
+        data.incident_type = this.incident_type;
+        if (data.incident_type === "stolen") data.m4s_problem_type_guid = this.M4S_STOLEN_GUID;
+        if (data.incident_type === "stolen" && data.info === "") data.info = "Aangifte diefstal";
+
         if (this.incident_update) {
-            if (data.laptop_owner_id === "" || data.laptop_name === "" || data.incident_type === "stolen" && data.info === "" && this.incident.m4s_guid === null) {
-                new AlertPopup("warning", "Roodgekleurde velden invullen aub.");
-                busy_indication_off();
-                return false
-            }
             data.id = this.incident.id;
-            if (data.incident_type !== "stolen") data.m4s_problem_type_guid = "";  // make sure to clear this field, else it pops up in different places
-            const laptop_select_option = document.getElementById("laptop-field").selectedOptions[0];
-            data.laptop_name = laptop_select_option ? laptop_select_option.label : "";
             await fetch_update("incident.incident", data);
 
-            // check for new or deleted attachments
-            if (this.attachments_to_delete.length > 0) await fetch_delete("incident.attachment", {ids: this.attachments_to_delete.join(",")})
+            // check for new attachments
             if (this.attachments.length > 0) {
-                const data = new FormData();
-                data.append("incident_id", this.incident.id);
-                for (const file of this.attachments) {
-                    if ("id" in file) continue; // skip, already in database
-                    data.append("attachment_file", file);
-                }
-                if (data.has("attachment_file")) {
-                    const resp1 = await fetch(Flask.url_for("incident.attachment"), {method: 'POST', body: data});
-                    await resp1.json();
+                for (const attachment of this.attachments) {
+                    if (!("id" in attachment)) { //New attachment, save to db and m4s (if appropriate)
+                        const data = new FormData();
+                        data.append("incident_id", this.incident.id);
+                        data.append("to_m4s", "true");
+                        data.append("attachment_file", attachment);
+                        const resp1 = await fetch(Flask.url_for("incident.attachment"), {method: 'POST', body: data});
+                        await resp1.json()
+                    }
                 }
             }
-
         } else {  // new gone
             const owner_data = this.owner_field.select2("data")[0];
             data.laptop_owner_name = owner_data.text;
@@ -312,16 +312,18 @@ export class IncidentGone {
             }
             [data.laptop_type, data.laptop_owner_id] = data.laptop_owner_id.split("-");
             data.category = "gone";
-            data.incident_type = "lost"
-            data["m4s_problem_type_guid"] = ""
             var resp = await fetch_post("incident.incident", data);
+
             if (this.attachments.length > 0) {
                 document.getElementById("incident-id-field").value = resp.data.id;
-                const data = new FormData();
-                data.append("incident_id", resp.data.id);
-                for (const file of this.attachments) data.append("attachment_file", file);
-                const resp1 = await fetch(Flask.url_for("incident.attachment"), {method: 'POST', body: data});
-                await resp1.json()
+                for (const attachment of this.attachments) {
+                    const data = new FormData();
+                    data.append("incident_id", resp.data.id);
+                    data.append("to_m4s", "true");
+                    data.append("attachment_file", attachment);
+                    const resp1 = await fetch(Flask.url_for("incident.attachment"), {method: 'POST', body: data});
+                    await resp1.json()
+                }
             }
             new AlertPopup(resp.data.status, resp.data.msg)
         }

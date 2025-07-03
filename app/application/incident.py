@@ -129,7 +129,7 @@ def add(data):
             if incident.laptop_owner_password_default:
                 __password_update(incident, app.config["AD_DEFAULT_PASSWORD"])
             history = dl.history.add(history_data)
-            if incident.incident_type == "hardware":
+            if incident.incident_type in ["hardware", "stolen"]:
                 ret = m4s.case_add(incident)
                 if ret["status"] != "ok":
                     history_data = {"incident_id": incident.id, "priority": incident.priority, "info": ret["msg"], "incident_type": incident.incident_type,
@@ -218,7 +218,7 @@ def update(data):
                 if not current_laptop_owner_password_default and incident.laptop_owner_password_default:
                     __password_update(incident, app.config["AD_DEFAULT_PASSWORD"])
                 log.info(f'{sys._getframe().f_code.co_name}: incident updated, {data}')
-                if "incident_type" in data and data["incident_type"] == "hardware" and incident.m4s_guid == None:  # changed type from software to hardware, put incident in M4S if not already in M4S
+                if incident.incident_type in ["hardware", "stolen"] and incident.m4s_guid is None:  # changed type from to hardware or stolen, put incident in M4S if not already in M4S
                     ret = m4s.case_add(incident)
                     if ret["status"] != "ok": return ret
                 return {"id": incident.id}

@@ -28,6 +28,7 @@ def add(incident_id, attachments, to_m4s):
             "type": file.mimetype,
             "m4s_reference": m4s_reference
         })
+        file.seek(0) # make sure to read from the start
         file.save(f"attachments/{attachment.id}.{file_extension}")
         log.info(f'{sys._getframe().f_code.co_name}: saved attachment "{file.filename}", (type) {file.content_type}, (id) {incident_id} (to-m4s) {to_m4s}')
     except Exception as e:

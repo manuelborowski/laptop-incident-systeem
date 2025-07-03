@@ -4,9 +4,9 @@
 <form id="gone-form">
     <div class="form-row" id="owner-row">
         <div class="form-element">
-            <label class="required">Eigenaar<select class="repair-update-disabled" id="owner-field" name="laptop_owner_id" style="width: 90%"></select></label>
+            <label class="required">Eigenaar<select class="gone-update-disabled" id="owner-field" name="laptop_owner_id" style="width: 90%"></select></label>
         </div>
-        <button id="owner-badge-scan" class="btn btn-success  repair-update-hidden">Scan badge van eigenaar</button>
+        <button id="owner-badge-scan" class="btn btn-success  gone-update-hidden">Scan badge van eigenaar</button>
     </div>
     <div class="form-row">
         <div class="form-element" style="min-width: 30%">
@@ -28,20 +28,27 @@
         <div class="form-element"><label>Locatie<select id="location-field" name="location"></select></label></div>
         <div class="form-element"><label>Status<select id="incident-state-field" name="incident_state"></select></label></div>
     </div>
+    <div class="form-row" hidden>
+        <div class="form-element">
+            <div style="display: flex; flex-direction: column">
+                <p style="margin-top: 10px; margin-bottom: 0"><b>Vorige info:</b></p>
+                <p style="margin-top: 0; margin-bottom: 0" id="info_previous"></p>
+            </div>
+        </div>
+    </div>
     <div class="form-row">
         <div class="form-element">
             <label>Info<textarea id="info-field" rows="6" cols="80" style="line-height: 1" name="info"></textarea></label>
         </div>
     </div>
-    <div class="form-row">
+    <div class="form-row group-attachment" hidden>
         <div class="form-element">
-            <button id="upload-attachment-btn" class="btn btn-success">Bijlagen uploaden</button>
+            <button id="upload-attachment-btn" class="btn btn-success">PV opladen</button>
         </div>
     </div>
-    <div class="form-row">
+    <div class="form-row group-attachment" hidden>
         <div class="form-element">
             <div style="display: flex; flex-direction: column">
-                <p style="margin-top: 10px; margin-bottom: 0"><b>Bijlagen:</b></p>
                 <p style="margin-top: 0; margin-bottom: 0" id="attachment-list"></p>
             </div>
         </div>
