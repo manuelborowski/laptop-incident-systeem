@@ -125,6 +125,7 @@ default_configuration_settings = {
     'm4s_bearer_token': ('', Settings.SETTING_TYPE.E_STRING),
     'm4s_bearer_expires_in': ('', Settings.SETTING_TYPE.E_STRING),
 
+    'help-link-wikijs': ({}, Settings.SETTING_TYPE.E_YAML),
 
 }
 

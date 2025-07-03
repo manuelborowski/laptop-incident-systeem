@@ -138,7 +138,7 @@ def meta():
     m4s_problem_options = [{"value": "none", "label": ""}]
     m4s_problem_labels = {t["value"]: t["label"] for _, types in m4s_problem_types.items() for t in types}
     m4s_problem_labels.update({None: "NVT"})
-
+    help_wikijs = dl.settings.get_configuration_setting("help-link-wikijs")
     _, default_location = dl.settings.get_setting("default-location", current_user.username)
     default_password = app.config["AD_DEFAULT_PASSWORD"]
     return json.dumps({"option": {"location": location_options, "incident_state": state_options, "incident_type": type_options, "m4s_category": m4s_category_options, "m4s_problem_type_guid": m4s_problem_options, "home_location": home_location_options},
@@ -150,7 +150,8 @@ def meta():
                        "keyed_option": keyed_options,
                        "location": locations,
                        "m4s": m4s_problem_types,
-                       "type": incident_types
+                       "type": incident_types,
+                       "wikijs": help_wikijs
                        })
 
 @bp_incident.route('/incident/location', methods=['POST', ])

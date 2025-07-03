@@ -1034,6 +1034,45 @@ settings_formio = {
               ]
             }
           ]
+        },
+        {
+          "label": "Help",
+          "tableView": false,
+          "key": "help",
+          "type": "container",
+          "input": true,
+          "components": [
+            {
+              "title": "Help",
+              "theme": "primary",
+              "collapsible": true,
+              "key": "help",
+              "type": "panel",
+              "label": "E-mail server settings",
+              "collapsed": true,
+              "input": false,
+              "tableView": false,
+              "components": [
+                {
+                  "label": "Submit",
+                  "showValidations": false,
+                  "theme": "warning",
+                  "tableView": false,
+                  "key": "submit",
+                  "type": "button",
+                  "input": true
+                },
+                {
+                  "label": "Link een sleutel met een pagina in wikijs (YAML)",
+                  "autoExpand": false,
+                  "tableView": true,
+                  "key": "help-link-wikijs",
+                  "type": "textarea",
+                  "input": true
+                }
+              ]
+            }
+          ]
         }
       ],
       "collapsed": true

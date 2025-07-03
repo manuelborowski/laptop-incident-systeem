@@ -177,7 +177,7 @@ const __gone_form = async (incident = null, history = "") => {
     if (form) {
         let owner_field = null;
         bootbox_dialog = bootbox.dialog({
-            title: "Laptop is verloren of gestolen",
+            title: `Laptop is verloren of gestolen <a target='_blank' href='${meta.wikijs.gone_dialog}'>(help)</a>`,
             size: "xl",
             message: form.template,
             buttons: {
