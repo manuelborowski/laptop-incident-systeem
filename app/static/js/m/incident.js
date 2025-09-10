@@ -93,6 +93,7 @@ $(document).ready(async () => {
         const cancel_btn = document.getElementById("cancel-btn");
         const save_btn = document.getElementById("save-btn");
         document.querySelectorAll(".repair-update-hidden").forEach(i => i.hidden = true);
+        document.querySelectorAll(".repair-update-visible").forEach(i => i.hidden = false);
 
         cancel_btn.addEventListener("click", () => {
             window.location.href = Flask.url_for("incident.m_show");

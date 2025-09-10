@@ -622,6 +622,7 @@ const __table_loaded = () => {
         const histories = await fetch_get("history.history", {filters: `incident_id$=$${row.id}`});
         const history = histories.map(e => e.info).filter(e => e !== "").join("<br>");
         if (incident.category === "repair") {
+            incident.login = row.login;
             await __repair_form(incident, history);
         } else if (incident.category === "return") {
             await __return_form(incident, history);

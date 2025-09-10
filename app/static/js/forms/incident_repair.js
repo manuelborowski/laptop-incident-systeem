@@ -377,6 +377,7 @@ export class IncidentRepair {
             }
 
             document.querySelectorAll(".repair-update-hidden").forEach(i => i.hidden = true);
+            document.querySelectorAll(".repair-update-visible").forEach(i => i.hidden = false);
             document.querySelectorAll(".repair-update-disabled").forEach(i => i.disabled = true);
             document.querySelectorAll(".required").forEach(i => i.classList.toggle("required"));
             this.__display_elements(this.incident.incident_type);

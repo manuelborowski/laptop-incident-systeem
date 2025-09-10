@@ -160,8 +160,9 @@ from functools import wraps
 # 0.117: add checkbox to push attachment to m4s.  At the moment, it is possible to push images only.
 # 0.118: implemented laptop lost or stolen
 # 0.119: add context-specific-help to wikijs
+# 0.120: display login on details window
 
-version = "0.119"
+version = "0.120"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 
