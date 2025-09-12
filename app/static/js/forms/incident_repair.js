@@ -231,14 +231,16 @@ export class IncidentRepair {
             bootbox.prompt({
                 title: "Typ het label van de laptop, schuine streep, serienummer.<br>" +
                     "Het serienummer is <b>verplicht</b> als dit incident voor Signpost is!!<br>" +
-                    "bv: SPB2023-0234/LMT344FD",
+                    "bv: SPB2023-0234/LMT344FD<br>" +
+                    "Opgelet, gebruik nooit de hoofdletter O, gebruik altijd een 0 (nul)!",
                 locale: "dutch",
                 callback: async res => {
                     if (res !== null) {
                         const laptop_field = document.getElementById("laptop-field");
                         laptop_field.innerHTML = "";
-                        const [_, serial] = res.split("/");
-                        laptop_field.add(new Option(res, serial, true, true));
+                        const [laptop_label, serial] = res.split("/");
+                        const serial_cleaned = serial.replace(/O/ig, "0"); // replace all small and capital o's by a 0 (zero)
+                        laptop_field.add(new Option(laptop_label + "/" + serial_cleaned, serial_cleaned, true, true));
                     }
                 }
             })
