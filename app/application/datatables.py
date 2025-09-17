@@ -22,11 +22,18 @@ def datatable_get_data(table_config, parameters, paginate=True):
             filters = parameters['filters']
             sql_query = table_config.pre_sql_filter(sql_query, filters)
 
+        search_constraints = []
         search_value = parameters['search']['value']
         if search_value:
             search_constraints = table_config.pre_sql_search(f"%{search_value}%")
-            if search_constraints:
-                sql_query = sql_query.filter(or_(*search_constraints))
+
+        for column in parameters["columns"]:
+            if column["data"] == "row_action": continue
+            if "search" in column and column["search"]["value"] != "":
+                search_constraints += table_config.pre_sql_column_search(column["data"], f"%{column["search"]["value"]}%")
+
+        if search_constraints:
+            sql_query = sql_query.filter(or_(*search_constraints))
 
         filtered_count = sql_query.count()
 

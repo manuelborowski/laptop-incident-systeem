@@ -162,8 +162,9 @@ from functools import wraps
 # 0.119: add context-specific-help to wikijs
 # 0.120: display login on details window
 # 0.121: when entering a serial number, replace small and capital o's with a 0
+# 0.122: add support for search in specific column
 
-version = "0.121"
+version = "0.122"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

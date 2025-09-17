@@ -23,7 +23,10 @@ class DatatableConfig:
         return q
 
     def pre_sql_search(self, search):
-        return None
+        return []
+
+    def pre_sql_column_search(self, column, search):
+        return []
 
     def pre_sql_order(self, q, on, direction):
         return q.order_by(desc(text(on))) if direction == 'desc' else q.order_by(text(on))

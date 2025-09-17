@@ -70,7 +70,7 @@ export function datatable_reload_table() {
     ctx.table.ajax.reload();
 }
 
-export const datatables_init = ({context_menu_items = [], filter_menu_items = [], button_menu_items = [], callbacks = {}}) => {
+export const datatables_init = ({context_menu_items = [], filter_menu_items = [], button_menu_items = [], column_search_items = [], callbacks = {}}) => {
     ctx = {table_config, reload_table: datatable_reload_table}
     ctx.cell_to_color = "color_keys" in table_config ? table_config.cell_color.color_keys : null;
     ctx.suppress_cell_content = "color_keys" in table_config ? table_config.cell_color.supress_cell_content : null;
@@ -141,12 +141,12 @@ export const datatables_init = ({context_menu_items = [], filter_menu_items = []
         }
 
         if ("display" in v) {
-            return (data, type, full, meta) =>  render_display(data, type, full, meta, v.display);
+            return (data, type, full, meta) => render_display(data, type, full, meta, v.display);
         }
 
         if ("equal" in v) {
             return (data, type, full, meta) => data === v.equal.to ? render_display(data, type, full, meta, v.equal.then) : render_display(data, type, full, meta, v.equal.else);
-            }
+        }
     };
 
 
@@ -163,6 +163,9 @@ export const datatables_init = ({context_menu_items = [], filter_menu_items = []
         __datatable_data_cb(data);
     }
     socketio.subscribe_on_receive(`${ctx.table_config.view}-datatable-data`, data_from_server);
+
+    //Add column search fields to layout::topEnd
+    const layout_top_end = column_search_items.map(x => () => $(`<input type="text" id="${x.column}-id" placeholder="${x.placeholder}">`));
 
     let datatable_config = {
         autoWidth: false,
@@ -181,7 +184,7 @@ export const datatables_init = ({context_menu_items = [], filter_menu_items = []
         language: {url: "static/datatables/dutch.json"},
         layout: {
             topStart: ["pageLength", "paging", "info"],
-            topEnd: "search",
+            topEnd: layout_top_end.concat(["search"]),
             bottomStart: ["pageLength", "paging"],
             bottomEnd: null
         },
@@ -226,8 +229,14 @@ export const datatables_init = ({context_menu_items = [], filter_menu_items = []
             }
             if (callbacks.table_loaded) callbacks.table_loaded();
         },
+
         initComplete: function () {
             new ColumnVisibility(document.querySelector('.column-visible-placeholder'), table_config.template, (column, visible) => ctx.table.column(column).visible(visible), table_config.view);
+            column_search_items.forEach(x => {
+                document.getElementById(`${x.column}-id`).addEventListener("keyup", e => {
+                    ctx.table.column(datatable_column2index[x.column]).search(e.target.value).draw();
+                });
+            })
         },
     }
 

@@ -647,6 +647,10 @@ const __table_loaded = () => {
     }));
 }
 
+const column_search_items = [
+    {column: "lis_badge_id", placeholder: "Zoek badge"}
+]
+
 const __row_created = (row, data, data_index, cells) => {
     if (data.flags && data.flags.split(",").includes("state-timeout")) {
         $(row).attr("style", `background-color: #ffa5006b;`);
@@ -686,7 +690,7 @@ $(document).ready(async () => {
         return false;
     });
     const callbacks = {table_loaded: __table_loaded, created_row: __row_created};
-    datatables_init({button_menu_items, context_menu_items, filter_menu_items, callbacks});
+    datatables_init({button_menu_items, context_menu_items, filter_menu_items, column_search_items, callbacks});
     __update_toolbar_fields();
     if (current_user.level < 3) document.querySelector(".button-menu-placeholder").hidden = true;
 });
