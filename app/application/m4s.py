@@ -113,7 +113,7 @@ class M4S:
                 return {"status": "ok"}
             incident.m4s_reference = "warning"
             dl.incident.commit()
-            log.error(f'{sys._getframe().f_code.co_name}: post cases returned {resp.status_code}')
+            log.error(f'{sys._getframe().f_code.co_name}: post cases returned error: id {incident.id}, badge {incident.lis_badge_id}, resp {resp.status_code}')
             log.error(f'{sys._getframe().f_code.co_name}: error: {resp.text}')
             if "Request.SerialNumber" in resp.text: return {"status": "error", "msg": "Het serienummer ontbreekt"}
             if "Request.ProblemTypeGuid" in resp.text: return {"status": "error", "msg": "De M4S categorie/probleem ontbreekt"}
