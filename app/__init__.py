@@ -164,8 +164,9 @@ from functools import wraps
 # 0.121: when entering a serial number, replace small and capital o's with a 0
 # 0.122: add support for search in specific column
 # 0.123: make m4s error more verbose
+# 0.124: default state depends type.
 
-version = "0.123"
+version = "0.124"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

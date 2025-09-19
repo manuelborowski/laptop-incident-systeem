@@ -325,7 +325,7 @@ export class IncidentRepair {
 
         // if the location is updated, change the event to transition
         this.location_field.addEventListener("change", e => {
-            this.incident_state_field.value = "transition";
+            this.incident_state_field.value = this.meta.type[this.lis_type_field.value].incident_state[0];
         });
 
         // hardware incident specific, update m4s-id options when m4s-category has changed
