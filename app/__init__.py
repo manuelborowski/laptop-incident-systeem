@@ -165,8 +165,9 @@ from functools import wraps
 # 0.122: add support for search in specific column
 # 0.123: make m4s error more verbose
 # 0.124: default state depends type.
+# 0.125: closed or cancelled incidents can be edited again
 
-version = "0.124"
+version = "0.125"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

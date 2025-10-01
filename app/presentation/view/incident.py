@@ -248,8 +248,8 @@ class Config(DatatableConfig):
             "loaned": edit_button_template + history_button_template + message_button_template + close_button_template,
             "lost": edit_button_template + history_button_template + message_button_template + close_button_template,
             "stolen": edit_button_template + history_button_template + message_button_template + close_button_template,
-            "cancelled": history_button_template,
-            "closed": history_button_template
+            "cancelled": edit_button_template + history_button_template,
+            "closed": edit_button_template + history_button_template
         }
 
         # used in dt.js
