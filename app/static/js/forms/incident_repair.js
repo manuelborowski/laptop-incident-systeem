@@ -239,7 +239,7 @@ export class IncidentRepair {
                         const laptop_field = document.getElementById("laptop-field");
                         laptop_field.innerHTML = "";
                         const [laptop_label, serial] = res.split("/");
-                        const serial_cleaned = serial.replace(/O/ig, "0"); // replace all small and capital o's by a 0 (zero)
+                        const serial_cleaned = serial !== undefined ? serial.replace(/O/ig, "0") : "NVT"; // replace all small and capital o's by a 0 (zero)
                         laptop_field.add(new Option(laptop_label + "/" + serial_cleaned, serial_cleaned, true, true));
                     }
                 }
