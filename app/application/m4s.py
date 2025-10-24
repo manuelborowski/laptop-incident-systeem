@@ -79,7 +79,7 @@ class M4S:
             headers = {"Authorization": f"Bearer {self.bearer_token}", "Content-Type": "application/json"}
             location = dl.settings.get_configuration_setting("lis-locations")[incident.current_location]
             staff = dl.staff.get(("code", "=", current_user.username))
-            [contact_first_name, contact_last_name] = [staff.voornaam, staff.naam] if staff else ["ict", ""]
+            [contact_first_name, contact_last_name] = [staff.voornaam, staff.naam] if staff else ["ict", "ict"]
             data = {
                 "languageCode": "nl",
                 "truthStatement": True,
@@ -123,10 +123,11 @@ class M4S:
             dl.incident.commit()
             log.error(f'{sys._getframe().f_code.co_name}: post cases returned error: id {incident.id}, badge {incident.lis_badge_id}, resp {resp.status_code}')
             log.error(f'{sys._getframe().f_code.co_name}: error: {resp.text}')
-            if "Request.SerialNumber" in resp.text: return {"status": "error", "msg": "Het serienummer ontbreekt"}
-            if "Request.ProblemTypeGuid" in resp.text: return {"status": "error", "msg": "De M4S categorie/probleem ontbreekt"}
-            if "Description" in resp.text: return {"status": "error", "msg": "Het infoveld moet ingevuld zijn"}
-            return {"status": "error", "msg": "Onbekend probleem met M4S, waarschuw ICT"}
+            if "Request.SerialNumber" in resp.text: return {"status": "error", "msg": "Het serienummer ontbreekt", "history": resp.text}
+            if "Request.ProblemTypeGuid" in resp.text: return {"status": "error", "msg": "De M4S categorie/probleem ontbreekt", "history": resp.text}
+            if "The device its warranty has expired" in resp.text: return {"status": "error", "msg": "Het toestel is buiten garantie", "history": f"Stuur een e-mail naar Administration_ant@signpost.eu, met de vermelding dat het toestel nog in garantie is, het serienummer ({incident.laptop_serial}) en een beschrijving van de fout."}
+            if "Description" in resp.text: return {"status": "error", "msg": "Het infoveld moet ingevuld zijn", "history": resp.text}
+            return {"status": "error", "msg": "Onbekend probleem met M4S, waarschuw ICT", "history": resp.text}
         except Exception as e:
             log.error(f'{sys._getframe().f_code.co_name}: {str(type(e))}, {e}')
             return {"status": "error", "msg": f"Onbekend probleem met M4S, waarschuw ICT.<br>{str(type(e))}, {e}"}

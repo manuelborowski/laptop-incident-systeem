@@ -278,7 +278,7 @@ class Config(DatatableConfig):
                     column["label"] = {"labels": m4s_problem_labels}
                 if column["data"] == "m4s_reference":
                     column["equal"] = {"to": "warning",
-                                       "then": {"template": '%0%', "fields": [{"field": "m4s_reference", "colors": {"warning": "orange"}, "labels": {"warning": "Waarschuwing"}}]},
+                                       "then": {"template": '%0%', "fields": [{"field": "m4s_reference", "colors": {"warning": "orange"}, "labels": {"warning": "Zie historiek"}}]},
                                        "else": {"template": '<a target="_blank" href="https://byod.signpost.be/incidents/%1%">%0%</a>', "fields": [{"field": "m4s_reference"}, {"field": "m4s_guid"}]}}
                 if column["data"] == "info":
                     column["ellipsis"] = {"cutoff": 30, "wordbreak": True}

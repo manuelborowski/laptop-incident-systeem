@@ -132,6 +132,10 @@ def add(data):
             if incident.incident_type in ["hardware", "stolen"]:
                 ret = m4s.case_add(incident)
                 if ret["status"] != "ok":
+                    if "history" in ret:
+                        history_data = {"incident_id": incident.id, "priority": incident.priority, "info": ret["history"], "incident_type": incident.incident_type,
+                                        "incident_state": incident.incident_state, "current_location": incident.current_location, "current_incident_owner": incident.current_incident_owner, "time": incident.time, }
+                        history = dl.history.add(history_data)
                     history_data = {"incident_id": incident.id, "priority": incident.priority, "info": ret["msg"], "incident_type": incident.incident_type,
                                     "incident_state": incident.incident_state, "current_location": incident.current_location, "current_incident_owner": incident.current_incident_owner, "time": incident.time, }
                     history = dl.history.add(history_data)
@@ -220,7 +224,15 @@ def update(data):
                 log.info(f'{sys._getframe().f_code.co_name}: incident updated, {data}')
                 if incident.incident_type in ["hardware", "stolen"] and incident.m4s_guid is None:  # changed type from to hardware or stolen, put incident in M4S if not already in M4S
                     ret = m4s.case_add(incident)
-                    if ret["status"] != "ok": return ret
+                    if ret["status"] != "ok":
+                        if "history" in ret:
+                            history_data = {"incident_id": incident.id, "priority": incident.priority, "info": ret["history"], "incident_type": incident.incident_type,
+                                            "incident_state": incident.incident_state, "current_location": incident.current_location, "current_incident_owner": incident.current_incident_owner, "time": incident.time, }
+                            history = dl.history.add(history_data)
+                        history_data = {"incident_id": incident.id, "priority": incident.priority, "info": ret["msg"], "incident_type": incident.incident_type,
+                                        "incident_state": incident.incident_state, "current_location": incident.current_location, "current_incident_owner": incident.current_incident_owner, "time": incident.time, }
+                        history = dl.history.add(history_data)
+                        return ret
                 return {"id": incident.id}
         log.error(f'{sys._getframe().f_code.co_name}: incident not found, id {data["id"]}')
         return {"status": "error", "msg": f'Incident niet gevonden, id {data["id"]}'}
