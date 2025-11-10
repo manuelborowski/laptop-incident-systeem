@@ -169,8 +169,9 @@ from functools import wraps
 # 0.126: incident repair, slash and serial number are not required
 # 0.127: update M4S specific info, emailaddress
 # 0.128: improve handling M4S errors
+# 0.129: small update in history and info
 
-version = "0.128"
+version = "0.129"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

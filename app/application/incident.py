@@ -189,7 +189,7 @@ def update(data):
             current_laptop_owner_password_default = incident.laptop_owner_password_default
             # if the info field is empty, but the previous was not, copy that...
             # don't copy when sending a message, i.e. the message can be empty
-            if data["info"] == "" and "event" in data and data["event"] != "message":
+            if data["info"] == "" and ("event" not in data or "event" in data and data["event"] != "message"):
                 history_latest = dl.history.get_m(("incident_id", "=", data["id"]), order_by="-id", first=True)
                 if history_latest:
                     data["info"] = history_latest.info
