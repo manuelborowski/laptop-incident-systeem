@@ -172,10 +172,14 @@ class M4S:
             log.error(f'{sys._getframe().f_code.co_name}: {e}')
         return []
 
+    BLACKLIST_TYPES = [ # skip because these are duplicates and cause confusion
+        "2a07bff1-9abc-11ee-a109-000d3add9f94"
+    ]
     def problem_type_get(self):
         types = dl.m4s.get_m()
         categories = {}
         for type in types:
+            if type.guid in self.BLACKLIST_TYPES: continue
             if not type.category: continue
             category = type.category.capitalize()
             if category not in categories:

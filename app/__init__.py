@@ -170,8 +170,9 @@ from functools import wraps
 # 0.127: update M4S specific info, emailaddress
 # 0.128: improve handling M4S errors
 # 0.129: small update in history and info
+# 0.130: M4S types, add blacklist to avoid confusion
 
-version = "0.129"
+version = "0.130"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 
