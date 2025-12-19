@@ -1,5 +1,5 @@
 import logging.handlers, os, sys
-from flask import Flask, abort
+from flask import Flask, abort, send_from_directory
 from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, current_user
@@ -171,8 +171,9 @@ from functools import wraps
 # 0.128: improve handling M4S errors
 # 0.129: small update in history and info
 # 0.130: M4S types, add blacklist to avoid confusion
+# 0.131: add google verification
 
-version = "0.130"
+version = "0.131"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 
@@ -310,3 +311,8 @@ app.register_blueprint(lisbadge.bp_lisbadge)
 app.register_blueprint(history.bp_history)
 app.register_blueprint(student.bp_student)
 app.register_blueprint(staff.bp_staff)
+
+# see https://search.google.com/search-console/welcome
+@app.route(f"/{app.config["GOOGLE_SITE_VERIFICATION"]}")
+def google_site_verification():
+    return send_from_directory(app.static_folder, app.config["GOOGLE_SITE_VERIFICATION"])
