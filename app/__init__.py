@@ -173,8 +173,9 @@ from functools import wraps
 # 0.130: M4S types, add blacklist to avoid confusion
 # 0.131: add google verification
 # 0.132: add incident export
+# 0.133: export, limit fields to export
 
-version = "0.132"
+version = "0.133"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

@@ -310,7 +310,19 @@ def incident_export(start_date, stop_date):
         header = None
         incidents = dl.incident.get_m([("time", ">", start_date), ("time", "<", stop_date)])
         for (incident) in incidents:
-            incidents_to_export.append(incident.to_dict())
+            out = incident.to_dict()
+            del out["lis_badge_id"]
+            del out["info"]
+            del out["spare_laptop_serial"]
+            del out["laptop_type"]
+            del out["priority"]
+            del out["laptop_owner_password"]
+            del out["laptop_owner_password_default"]
+            del out["m4s_guid"]
+            del out["m4s_problem_type_guid"]
+            del out["current_location"]
+            del out["current_incident_owner"]
+            incidents_to_export.append(out)
 
         if header:
             df = pd.DataFrame(incidents_to_export, columns=header)
