@@ -204,6 +204,18 @@ def form():
         log.error(f'{sys._getframe().f_code.co_name}: Exception, {e}')
         return fetch_return_error(f'Exception, {e}')
 
+@bp_incident.route('/incident/export', methods=['GET'])
+@login_required
+def export():
+    try:
+        startdate = request.args.get("from")
+        enddate = request.args.get("till")
+        ret = al.incident.incident_export(startdate, enddate)
+        return ret
+    except Exception as e:
+        log.error(f'{sys._getframe().f_code.co_name}: {e}')
+        return {"status": False, "data": f'{sys._getframe().f_code.co_name}: {e}'}
+
 class Config(DatatableConfig):
     def pre_sql_query(self):
         return dl.incident.pre_sql_query()

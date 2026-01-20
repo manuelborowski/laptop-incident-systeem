@@ -172,8 +172,9 @@ from functools import wraps
 # 0.129: small update in history and info
 # 0.130: M4S types, add blacklist to avoid confusion
 # 0.131: add google verification
+# 0.132: add incident export
 
-version = "0.131"
+version = "0.132"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

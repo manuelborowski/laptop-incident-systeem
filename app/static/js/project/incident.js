@@ -5,6 +5,7 @@ import {AlertPopup} from "../common/popup.js";
 import {IncidentRepair} from "../forms/incident_repair.js";
 import {autologout_disable, autologout_enable} from "../base.js";
 import {IncidentGone} from "../forms/incident_gone.js";
+import {BForms} from "../common/BForms.js";
 
 const meta = await fetch_get("incident.meta")
 
@@ -545,8 +546,28 @@ const button_menu_items = [
     },
 ]
 
+const __export_registrations = async () => {
+    const bform = new BForms([{tag: "link", href: "static/css/form.css", rel: "stylesheet"}, {
+        format: "vertical-center", rows: [{type: "date", label: "Vanaf datum", name: "from"}, {type: "date", label: "Tot en met datum", name: "till"},]
+    }]);
+    bootbox.dialog({
+        title: "Exporteer registraties", message: bform.form, buttons: {
+            confirm: {
+                label: "OK", className: "btn-primary", callback: async () => {
+                    const form_data = bform.get_data();
+                    window.open(`/incident/export?from=${form_data.from}&till=${form_data.till}`, '_blank');
+                }
+            }, cancel: {
+                label: "Annuleer", className: "btn-secondary", callback: async () => {
+                }
+            },
+        },
+    });
+}
+
 const context_menu_items = [
     {type: "item", label: 'Historiek', iconscout: 'history', cb: __history_form},
+    {type: "item", label: 'Export', iconscout: 'export', cb: __export_registrations},
 ]
 
 const __filter_scan_lis_badge = () => {

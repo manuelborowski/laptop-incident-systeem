@@ -1,8 +1,9 @@
-import sys, datetime, re, random, requests, wonderwords, json
+import sys, datetime, re, random, requests, wonderwords, json, io
 from app.application.m4s import m4s
 from app import app, data as dl, application as al
 from flask_login import current_user
-from flask import request
+from flask import request, make_response
+import pandas as pd
 
 # logging on file level
 import logging
@@ -282,6 +283,51 @@ def laptop_get(data):
     except Exception as e:
         log.error(f'{sys._getframe().f_code.co_name}: {data}, {e}')
         raise
+
+def incident_export(start_date, stop_date):
+    try:
+        def __create_line(header, line, cache):
+            for staff in header:
+                if staff in cache:
+                    seconds = cache[staff]
+                    if seconds < 0:
+                        seconds *= -1
+                        sign = "-"
+                    else:
+                        sign = ""
+                    hours = int(seconds / 3600)
+                    minutes = int((seconds - hours * 3600) / 60)
+                    seconds = seconds - hours * 3600 - minutes * 60
+                    time_string = f"{minutes:02d}:{seconds:02d}"
+                    if hours > 0:
+                        time_string = f"{hours:02d}:{time_string}"
+                    line.append(f"{sign}{time_string}")
+                else:
+                    line.append("")
+            return line
+
+        incidents_to_export = []
+        header = None
+        incidents = dl.incident.get_m([("time", ">", start_date), ("time", "<", stop_date)])
+        for (incident) in incidents:
+            incidents_to_export.append(incident.to_dict())
+
+        if header:
+            df = pd.DataFrame(incidents_to_export, columns=header)
+        else:
+            df = pd.DataFrame(incidents_to_export)
+        out = io.BytesIO()
+        excel_writer = pd.ExcelWriter(out, engine="xlsxwriter")
+        df.to_excel(excel_writer, index=False)
+        excel_writer.close()
+        res = make_response(out.getvalue())
+        res.headers["Content-Disposition"] = f"attachment; filename=export-LIS-{datetime.datetime.now().strftime('%Y-%m-%d-%H-%M')}.xlsx"
+        res.headers["Content-type"] = "data:text/xlsx"
+        log.info(f'{sys._getframe().f_code.co_name}: Exported registration info, {len(incidents_to_export)} incidents')
+        return res
+    except Exception as e:
+        log.error(f'{sys._getframe().f_code.co_name}: {e}')
+        return {"data": f"Fout: {e}"}
 
 def message_default(incident_id):
     try:
