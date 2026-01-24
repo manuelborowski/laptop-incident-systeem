@@ -80,7 +80,7 @@ def student_cron_load_from_sdh(opaque=None, **kwargs):
                     else:
                         # New student
                         klascode = sdh_student["klascode"]
-                        klasgroepcode = klascode if klascode == "OKAN" or int(klascode[0]) > 1 and sdh_student["instellingsnummer"] == "030569" or len(klascode) == 2 else klascode[:2]
+                        klasgroepcode = klascode if klascode == "OKAN" or int(klascode[0]) > 1 and sdh_student["instellingsnummer"] == "30569" or len(klascode) == 2 else klascode[:2]
                         new_student = {"leerlingnummer": sdh_student["leerlingnummer"], "klasgroepcode": klasgroepcode,
                                        "naam": sdh_student["naam"], "voornaam": sdh_student["voornaam"], "rfid": sdh_student["rfid"], "username": sdh_student["username"]}
                         new_students.append(new_student)
