@@ -174,8 +174,9 @@ from functools import wraps
 # 0.131: add google verification
 # 0.132: add incident export
 # 0.133: export, limit fields to export
+# 0.134: bugfix column-search.  Added warning if no laptop found in entra.
 
-version = "0.133"
+version = "0.134"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

@@ -270,14 +270,17 @@ def laptop_get(data):
         if resp.status_code == 200:
             data = resp.json()
             if "status" in data and data["status"] == True:
-                user_entra_id = data["data"][0]["entra_id"]
-                url = app.config["ENTRA_API_URL"]
-                url = f'{url}/device/get?filters=user_entra_id$=${user_entra_id},active$=$null'
-                resp = requests.get(url, headers={"X-Api-Key": key})
-                if resp.status_code == 200:
-                    data = resp.json()
-                    if "status" in data and data["status"] == True:
-                        return data["data"]
+                if data["data"]:
+                    user_entra_id = data["data"][0]["entra_id"]
+                    url = app.config["ENTRA_API_URL"]
+                    url = f'{url}/device/get?filters=user_entra_id$=${user_entra_id},active$=$null'
+                    resp = requests.get(url, headers={"X-Api-Key": key})
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        if "status" in data and data["status"] == True:
+                            return data["data"]
+                else:
+                    return {"status": "warning", "msg": "Geen laptop gevonden in het systeem"}
         else:
             raise
     except Exception as e:

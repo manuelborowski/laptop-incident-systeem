@@ -126,11 +126,8 @@ def pre_sql_search(search_string):
     return search_constraints
 
 
-def pre_sql_column_search(column, search_string):
-    search_constraints = []
-    search_constraints.append(getattr(Incident, column).like(search_string))
-    return search_constraints
-
-
-
-
+def pre_sql_column_search(column, search_string, strict=False):
+    if strict:
+        return [getattr(Incident, column) == search_string]
+    else:
+        return [getattr(Incident, column).like(f"%{search_string}%")]

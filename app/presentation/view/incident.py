@@ -226,8 +226,8 @@ class Config(DatatableConfig):
     def pre_sql_search(self, search):
         return dl.incident.pre_sql_search(search)
 
-    def pre_sql_column_search(self, column, search):
-        return dl.incident.pre_sql_column_search(column, search)
+    def pre_sql_column_search(self, column, search, strict=False):
+        return dl.incident.pre_sql_column_search(column, search, strict)
 
     def post_process_template(self, template):
         locations = dl.settings.get_configuration_setting("lis-locations")

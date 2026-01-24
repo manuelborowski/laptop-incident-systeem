@@ -30,7 +30,7 @@ def datatable_get_data(table_config, parameters, paginate=True):
         for column in parameters["columns"]:
             if column["data"] == "row_action": continue
             if "search" in column and column["search"]["value"] != "":
-                search_constraints += table_config.pre_sql_column_search(column["data"], f"%{column["search"]["value"]}%")
+                search_constraints += table_config.pre_sql_column_search(column["data"], f"{column["search"]["value"]}", not column["search"]["regex"])
 
         if search_constraints:
             sql_query = sql_query.filter(or_(*search_constraints))

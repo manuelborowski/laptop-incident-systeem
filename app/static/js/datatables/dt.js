@@ -234,8 +234,7 @@ export const datatables_init = ({context_menu_items = [], filter_menu_items = []
             new ColumnVisibility(document.querySelector('.column-visible-placeholder'), table_config.template, (column, visible) => ctx.table.column(column).visible(visible), table_config.view);
             column_search_items.forEach(x => {
                 document.getElementById(`${x.column}-id`).addEventListener("keyup", e => {
-                    ctx.table.column(datatable_column2index[x.column]).search(e.target.value).draw();
-                });
+                    ctx.table.column(datatable_column2index[x.column]).search(e.target.value, {exact: true} ).draw();});
             })
         },
     }

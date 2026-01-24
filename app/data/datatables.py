@@ -25,7 +25,7 @@ class DatatableConfig:
     def pre_sql_search(self, search):
         return []
 
-    def pre_sql_column_search(self, column, search):
+    def pre_sql_column_search(self, column, search, strict=False):
         return []
 
     def pre_sql_order(self, q, on, direction):

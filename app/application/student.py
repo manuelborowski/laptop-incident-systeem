@@ -78,6 +78,7 @@ def student_cron_load_from_sdh(opaque=None, **kwargs):
                             nbr_updated += 1
                         del(db_leerlingnummer_to_student[sdh_student["leerlingnummer"]])
                     else:
+                        # New student
                         klascode = sdh_student["klascode"]
                         klasgroepcode = klascode if klascode == "OKAN" or int(klascode[0]) > 1 and sdh_student["instellingsnummer"] == "030569" or len(klascode) == 2 else klascode[:2]
                         new_student = {"leerlingnummer": sdh_student["leerlingnummer"], "klasgroepcode": klasgroepcode,
