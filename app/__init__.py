@@ -177,8 +177,9 @@ from functools import wraps
 # 0.134: bugfix column-search.  Added warning if no laptop found in entra.
 # 0.135: small bugfix
 # 0.136: m4s contact email is set to incident-owner
+# 0.137: added second contact in m4s
 
-version = "0.136"
+version = "0.137"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

@@ -98,6 +98,11 @@ class M4S:
                         "firstName": contact_first_name,
                         "lastName": contact_last_name,
                         "email": contact_email
+                    },
+                    {
+                        "firstName": contact_first_name,
+                        "lastName": contact_last_name,
+                        "email": location["signpost"]["email"]
                     }
                 ],
                 "billingContact": {
