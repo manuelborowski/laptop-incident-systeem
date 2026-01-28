@@ -80,6 +80,7 @@ class M4S:
             location = dl.settings.get_configuration_setting("lis-locations")[incident.current_location]
             staff = dl.staff.get(("code", "=", current_user.username))
             [contact_first_name, contact_last_name] = [staff.voornaam, staff.naam] if staff else ["ict", "ict"]
+            contact_email = staff.email if staff else location["signpost"]["email"]
             data = {
                 "languageCode": "nl",
                 "truthStatement": True,
@@ -96,7 +97,7 @@ class M4S:
                     {
                         "firstName": contact_first_name,
                         "lastName": contact_last_name,
-                        "email": location["signpost"]["email"]
+                        "email": contact_email
                     }
                 ],
                 "billingContact": {

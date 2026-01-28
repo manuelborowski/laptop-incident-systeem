@@ -176,8 +176,9 @@ from functools import wraps
 # 0.133: export, limit fields to export
 # 0.134: bugfix column-search.  Added warning if no laptop found in entra.
 # 0.135: small bugfix
+# 0.136: m4s contact email is set to incident-owner
 
-version = "0.135"
+version = "0.136"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

@@ -20,6 +20,7 @@ class Staff(db.Model, SerializerMixin):
     id = db.Column(db.Integer(), primary_key=True)
     voornaam = db.Column(db.String(256), default='')
     naam = db.Column(db.String(256), default='')
+    email = db.Column(db.String(256), default='')
     code = db.Column(db.String(256), default='')
     rfid = db.Column(db.String(256))
     ss_internal_nbr = db.Column(db.String(256), default='')
