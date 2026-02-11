@@ -347,6 +347,16 @@ settings_formio = {
                   "key": "ss-student-message-template",
                   "type": "textarea",
                   "input": true
+                },
+                {
+                  "label": "SS bericht aan de co-accounts (HTML)",
+                  "applyMaskOn": "change",
+                  "autoExpand": false,
+                  "tableView": true,
+                  "validateWhenHidden": false,
+                  "key": "ss-coaccount-message-template",
+                  "type": "textarea",
+                  "input": true
                 }
               ]
             }

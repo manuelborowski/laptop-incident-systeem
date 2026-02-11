@@ -142,7 +142,7 @@ def add(data):
                     history = dl.history.add(history_data)
                     return_msg += f"<br> Opgepast: {ret['msg']}"
                     return_status = "warning"
-
+            message_send_to_coaccount(incident)
             log.info(f'{sys._getframe().f_code.co_name}: incident added, {data}')
             return {"data": {"status": return_status, "id": incident.id, "msg": return_msg}}
         log.error(f'{sys._getframe().f_code.co_name}: incident could not be add')
@@ -343,6 +343,40 @@ def incident_export(start_date, stop_date):
     except Exception as e:
         log.error(f'{sys._getframe().f_code.co_name}: {e}')
         return {"data": f"Fout: {e}"}
+
+# Send to coaccounts to inform the laptop is being repaired
+def message_send_to_coaccount(incident):
+    try:
+        if incident and incident.laptop_type == "leerling":
+            message_body = dl.settings.get_configuration_setting("ss-coaccount-message-template")
+            laptop_owner = dl.student.get(("leerlingnummer", "=", incident.laptop_owner_id))
+            if laptop_owner:
+                message_body = message_body.replace("%%VOORNAAM%%", laptop_owner.voornaam)
+                message_body = message_body.replace("%%NAAM%%", laptop_owner.naam)
+                signature = "ICT Coördinatoren Campus Sint-Ursula Lier"
+                message_body = message_body.replace("%%SIGNATURE%%", signature)
+
+                send_to_overwrite = dl.settings.get_configuration_setting("generic-ss-send-to")
+                ss_to = []
+                if send_to_overwrite != "":
+                    for code in send_to_overwrite.split(","):
+                        staff = dl.staff.get(("code", "=", code))
+                        ss_to.append(staff.ss_internal_nbr)
+                    co_accounts = [0]
+                else:
+                    ss_to = [laptop_owner.leerlingnummer]
+                    co_accounts = [1, 2]
+                sender = "lis"
+                log.info(f"{sys._getframe().f_code.co_name}, ss-message to {ss_to}, from {sender}")
+                for to in ss_to:
+                    for co_account in co_accounts:
+                        ret = dl.smartschool.smartschool.send_message(to, sender, "Laptop in herstelling", message_body, co_account)
+                        if ret != 0:
+                            log.error(f'{sys._getframe().f_code.co_name}: send_message returned {ret}')
+                return
+        log.error(f'{sys._getframe().f_code.co_name}: unknown incident')
+    except Exception as e:
+        log.error(f'{sys._getframe().f_code.co_name}: {e}')
 
 def message_default(incident_id):
     try:

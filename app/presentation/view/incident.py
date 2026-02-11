@@ -229,6 +229,9 @@ class Config(DatatableConfig):
     def pre_sql_column_search(self, column, search, strict=False):
         return dl.incident.pre_sql_column_search(column, search, strict)
 
+    def format_data(self, db_list, total_count=None, filtered_count=None):
+        return al.incident.format_data(db_list, total_count, filtered_count)
+
     def post_process_template(self, template):
         locations = dl.settings.get_configuration_setting("lis-locations")
         location_labels = {k: v["label"] for (k, v) in locations.items()}
@@ -301,9 +304,6 @@ class Config(DatatableConfig):
                 if column["data"] == "spare_laptop_name":
                     column["display"] = {"template": "%0% %1%", "fields": [{"field": "spare_laptop_name"}, {"field": "charger", "bool": True}]}
         return template
-
-    def format_data(self, db_list, total_count=None, filtered_count=None):
-        return al.incident.format_data(db_list, total_count, filtered_count)
 
 config = Config("incident", "Incidenten")
 

@@ -178,8 +178,9 @@ from functools import wraps
 # 0.135: small bugfix
 # 0.136: m4s contact email is set to incident-owner
 # 0.137: added second contact in m4s
+# 0.138: when adding an student-incident, inform co-accounts
 
-version = "0.137"
+version = "0.138"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

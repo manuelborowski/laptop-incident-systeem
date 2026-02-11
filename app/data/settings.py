@@ -98,6 +98,7 @@ default_configuration_settings = {
     'lis-badge-datatables-template': ({}, Settings.SETTING_TYPE.E_YAML),
 
     'ss-student-message-template': ('', Settings.SETTING_TYPE.E_STRING),
+    'ss-coaccount-message-template': ('', Settings.SETTING_TYPE.E_STRING),
 
     'cron-scheduler-template': ('', Settings.SETTING_TYPE.E_STRING),
     'cron-enable-modules': ({}, Settings.SETTING_TYPE.E_JSON),
