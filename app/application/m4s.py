@@ -94,11 +94,11 @@ class M4S:
                     "repairAtInstitution": True
                 },
                 "contacts": [
-                    {
-                        "firstName": contact_first_name,
-                        "lastName": contact_last_name,
-                        "email": contact_email
-                    },
+                    # {
+                    #     "firstName": contact_first_name,
+                    #     "lastName": contact_last_name,
+                    #     "email": contact_email
+                    # },
                     {
                         "firstName": contact_first_name,
                         "lastName": contact_last_name,
