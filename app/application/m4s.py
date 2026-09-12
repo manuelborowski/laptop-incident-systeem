@@ -87,7 +87,7 @@ class M4S:
                 "serialNumber": incident.laptop_serial,
                 "institutionGuid": app.config["M4S_INSTITUTION_GUID"],
                 "problemTypeGuid": incident.m4s_problem_type_guid,
-                "description": incident.info,
+                "description": f"Incident nummer: {incident.lis_badge_id}\n" + incident.info,
                 "address": {
                     "street": location["signpost"]["straat"],
                     "number": location["signpost"]["nummer"],

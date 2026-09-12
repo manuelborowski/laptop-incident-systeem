@@ -150,3 +150,4 @@
 # 0.138: when adding an student-incident, inform co-accounts
 # 0.139: m4s email-contact, remove staff-email
 # 0.140: update to python 3.13
+# 0.141: Signpost specific, add indicent number to info
