@@ -1,5 +1,7 @@
 from app import app
 from zeep import Client
+from zeep.transports import Transport
+from threading import Lock
 
 #logging on file level
 import logging, sys
@@ -10,7 +12,17 @@ log.addFilter(MyLogFilter())
 
 class SmartSchool:
     def __init__(self):
-        self.soap = Client(app.config["SS_API_URL"])
+        self._soap = None
+        self._soap_lock = Lock()
+
+    @property
+    def soap(self):
+        # Loading the remote WSDL must not block application startup.
+        with self._soap_lock:
+            if self._soap is None:
+                self._soap = Client(app.config["SS_API_URL"],
+                                    transport=Transport(timeout=15, operation_timeout=30))
+        return self._soap
 
     def send_message(self, to, sender, subject, body, account=0, enable_sending=True):
         try:

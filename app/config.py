@@ -10,7 +10,8 @@ class Config(object):
 
 class DevelopmentConfig(Config):
     SQLALCHEMY_ECHO = False
-    SOCKETIO_ASYNC_MODE = None
+    # Native threads avoid monkey-patching threads created by the debugger.
+    SOCKETIO_ASYNC_MODE = 'threading'
 
 
 class ProductionConfig(Config):
