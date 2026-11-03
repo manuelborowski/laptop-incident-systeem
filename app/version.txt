@@ -152,3 +152,4 @@
 # 0.140: update to python 3.13
 # 0.141: Signpost specific, add indicent number to info
 0.142: reuse lis badge number only when state is closed or cancelled
+0.143: introduced warranty_state

@@ -357,6 +357,36 @@ settings_formio = {
                   "key": "ss-coaccount-message-template",
                   "type": "textarea",
                   "input": true
+                },
+                {
+                  "label": "Buiten garantie, wacht op goedkeuring om te herstellen (HTML)",
+                  "applyMaskOn": "change",
+                  "autoExpand": false,
+                  "tableView": true,
+                  "validateWhenHidden": false,
+                  "key": "warranty_repair_to_be_approved",
+                  "type": "textarea",
+                  "input": true
+                },
+                {
+                  "label": "Buiten garantie, herstelling goedgekeurd (HTML)",
+                  "applyMaskOn": "change",
+                  "autoExpand": false,
+                  "tableView": true,
+                  "validateWhenHidden": false,
+                  "key": "warranty_repair_approved",
+                  "type": "textarea",
+                  "input": true
+                },
+                {
+                  "label": "Buiten garantie, Signpost factuur goedgekeurd (HTML)",
+                  "applyMaskOn": "change",
+                  "autoExpand": false,
+                  "tableView": true,
+                  "validateWhenHidden": false,
+                  "key": "warranty_invoice_approved",
+                  "type": "textarea",
+                  "input": true
                 }
               ]
             }
@@ -789,6 +819,36 @@ settings_formio = {
                   "type": "textarea",
                   "input": true
                 }
+              ]
+            }
+          ]
+        },
+        {
+          "label": "Notificaties",
+          "tableView": false,
+          "validateWhenHidden": false,
+          "key": "warranty-notifications",
+          "type": "container",
+          "input": true,
+          "components": [
+            {
+              "title": "Notificaties",
+              "theme": "primary",
+              "collapsible": true,
+              "key": "warranty-notifications-panel",
+              "type": "panel",
+              "label": "Notificaties",
+              "collapsed": true,
+              "input": false,
+              "tableView": false,
+              "components": [
+                {"label": "Opslaan", "showValidations": false, "theme": "warning", "tableView": false, "key": "submit", "type": "button", "input": true},
+                {"label": "Wacht op goedkeuring om te herstellen: extra ontvangers (YAML)", "applyMaskOn": "change", "autoExpand": false, "tableView": true,
+                 "validateWhenHidden": false, "key": "warranty_repair_to_be_approved_recipients", "type": "textarea", "input": true},
+                {"label": "Herstelling goedgekeurd: extra ontvangers (YAML)", "applyMaskOn": "change", "autoExpand": false, "tableView": true,
+                 "validateWhenHidden": false, "key": "warranty_repair_approved_recipients", "type": "textarea", "input": true},
+                {"label": "Signpost factuur goedgekeurd: extra ontvangers (YAML)", "applyMaskOn": "change", "autoExpand": false, "tableView": true,
+                 "validateWhenHidden": false, "key": "warranty_invoice_approved_recipients", "type": "textarea", "input": true}
               ]
             }
           ]

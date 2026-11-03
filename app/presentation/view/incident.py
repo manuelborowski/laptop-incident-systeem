@@ -107,6 +107,35 @@ def message():
         log.error(f'{sys._getframe().f_code.co_name}: {e}')
         return fetch_return_error()
 
+@bp_incident.route('/incident/warranty-message', methods=['POST', 'GET'])
+@login_required
+def warranty_message():
+    try:
+        if request.method == "GET":
+            return json.dumps(al.incident.warranty_message_default(request.args.get("id"), request.args.get("warranty_state")))
+        return json.dumps(al.incident.warranty_message_send(json.loads(request.data)))
+    except Exception as e:
+        log.error(f'{sys._getframe().f_code.co_name}: {e}')
+        return fetch_return_error()
+
+@bp_incident.route('/incident/warranty-recipients', methods=['GET'])
+@login_required
+def warranty_recipients():
+    try:
+        return json.dumps(al.incident.warranty_message_recipients(request.args.get("warranty_state")))
+    except Exception as e:
+        log.error(f'{sys._getframe().f_code.co_name}: {e}')
+        return fetch_return_error()
+
+@bp_incident.route('/incident/warranty-state', methods=['UPDATE'])
+@login_required
+def warranty_state():
+    try:
+        return json.dumps(al.incident.warranty_state_restore(json.loads(request.data)))
+    except Exception as e:
+        log.error(f'{sys._getframe().f_code.co_name}: {e}')
+        return fetch_return_error()
+
 # used in incident.js
 @bp_incident.route('/incident/meta', methods=['GET'])
 @login_required
@@ -128,8 +157,9 @@ def meta():
     for category, data in categories.items():
         if "incident_type" in data: keyed_options["incident_type"][category] = data["incident_type"]
     states = dl.settings.get_configuration_setting("lis-state")
-    state_options = [{"value": k, "label": v["label"]} for k, v in states.items()]
+    state_options = [{"value": k, "label": v["label"]} for k, v in states.items() if not k.startswith("warranty_")]
     state_labels = {k: v["label"] for k, v in states.items()}
+    warranty_state_options = [{"value": key, "label": state["label"]} for key, state in states.items() if key.startswith("warranty_")]
     home_locations = dl.settings.get_configuration_setting("lis-home-locations")
     home_location_options = [{"value": k, "label": location_labels[k]} for k in home_locations]
     m4s_problem_types = m4s.problem_type_get()
@@ -141,7 +171,8 @@ def meta():
     help_wikijs = dl.settings.get_configuration_setting("help-link-wikijs")
     _, default_location = dl.settings.get_setting("default-location", current_user.username)
     default_password = app.config["AD_DEFAULT_PASSWORD"]
-    return json.dumps({"option": {"location": location_options, "incident_state": state_options, "incident_type": type_options, "m4s_category": m4s_category_options, "m4s_problem_type_guid": m4s_problem_options, "home_location": home_location_options},
+    return json.dumps({"option": {"location": location_options, "incident_state": state_options, "incident_type": type_options, "m4s_category": m4s_category_options, "m4s_problem_type_guid": m4s_problem_options,
+                                  "home_location": home_location_options, "warranty_state": warranty_state_options},
                        "label": {"location": location_labels, "incident_state": state_labels, "category": category_labels, "incident_type": type_labels, "m4s_problem_type_guid": m4s_problem_labels},
                        "default": {"location": default_location, "m4s_category": "none", "m4s_problem_type_guid": m4s_problem_options[0]["value"]},
                        "default_password": default_password,
@@ -233,6 +264,8 @@ class Config(DatatableConfig):
         return al.incident.format_data(db_list, total_count, filtered_count)
 
     def post_process_template(self, template):
+        if not isinstance(template, list):
+            template = []
         locations = dl.settings.get_configuration_setting("lis-locations")
         location_labels = {k: v["label"] for (k, v) in locations.items()}
         states = dl.settings.get_configuration_setting("lis-state")
@@ -291,6 +324,8 @@ class Config(DatatableConfig):
                     column["label"] = {"labels": type_labels}
                 if column["data"] == "m4s_problem_type_guid":
                     column["label"] = {"labels": m4s_problem_labels}
+                if column["data"] == "warranty_state":
+                    column["display"] = {"template": "%0%", "fields": [{"field": "warranty_state", "labels": state_labels, "colors": state_colors}]}
                 if column["data"] == "m4s_reference":
                     column["equal"] = {"to": "warning",
                                        "then": {"template": '%0%', "fields": [{"field": "m4s_reference", "colors": {"warning": "orange"}, "labels": {"warning": "Zie historiek"}}]},

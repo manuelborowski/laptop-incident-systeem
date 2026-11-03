@@ -1,6 +1,10 @@
 /instance/config.py
 /log/**
 /migrations/**
+!/migrations/versions/
+/migrations/versions/*
+!/migrations/versions/7cbf6e2e9b1e_.py
+!/migrations/versions/a9f31c2d4b70_add_incident_warranty_state.py
 /venv/**
 /test/
 /attachments

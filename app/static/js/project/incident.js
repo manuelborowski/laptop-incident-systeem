@@ -7,11 +7,122 @@ import {autologout_disable, autologout_enable} from "../base.js";
 import {IncidentGone} from "../forms/incident_gone.js";
 import {BForms} from "../common/BForms.js";
 
+const __html_escape = value => String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+const warranty_popup_style = document.createElement("style");
+warranty_popup_style.textContent = [
+    ".warranty-message-dialog .modal-dialog{width:90vw;max-width:1100px}",
+    ".warranty-message-dialog .modal-body{min-height:0}",
+    ".warranty-message-content{max-height:calc(100vh - 14rem);overflow-y:auto}",
+    ".warranty-message-recipients{margin-bottom:12px}.warranty-recipient-option{display:block}",
+    ".warranty-message-subject{margin:12px 0}.warranty-message-toolbar button{min-width:34px}",
+    ".warranty-message-body{min-height:240px;max-height:50vh;overflow-y:auto;padding:10px;border:1px solid #ced4da;border-radius:4px;background:white}"
+].join("");
+document.head.append(warranty_popup_style);
+
+const send_warranty_message = async incident => {
+    const warranty_state = incident.warranty_state;
+    const defaults = await fetch_get("incident.warranty_message", {id: incident.id, warranty_state});
+    if (!defaults || defaults.status === "error") return false;
+    const recipients = await fetch_get("incident.warranty_recipients", {warranty_state});
+    if (!Array.isArray(recipients)) return false;
+    const receiver_markup = defaults.recipient_override ? (defaults.forced_recipients || []).map(recipient =>
+        `<label class="warranty-recipient-option"><input type="checkbox" checked disabled> ${__html_escape(recipient.label)}</label>`
+    ).join("") : recipients.map(recipient => {
+        const code = typeof recipient === "string" ? recipient : recipient.code || recipient.value || "";
+        const label = typeof recipient === "string" ? recipient : recipient.label || recipient.name || recipient.code || recipient.value || "";
+        return `<label class="warranty-recipient-option"><input type="checkbox" class="warranty-extra-recipient" value="${__html_escape(code)}" checked> ${__html_escape(label)}</label>`;
+    }).join("");
+    const invoice_only = warranty_state === "warranty_invoice_approved";
+    const student_option = !defaults.recipient_override && defaults.can_message_student && !invoice_only ?
+        `<label><input id="warranty-student" type="checkbox" checked> Student (${__html_escape(defaults.student_name)})</label><br>` : "";
+    const coaccount_option = !defaults.recipient_override && defaults.can_message_coaccount && !invoice_only ?
+        `<label><input id="warranty-coaccount" type="checkbox" checked> Co-accounts</label><br>` : "";
+    let popup_result = false;
+    let sending = false;
+    return new Promise(resolve => {
+        bootbox.dialog({
+            size: "xl",
+            scrollable: true,
+            title: defaults.message_subject,
+            message: `<div class="warranty-message-content">
+                <div class="warranty-message-recipients">${student_option}${coaccount_option}${receiver_markup}</div>
+                <div class="warranty-message-subject"><label for="warranty-message-subject">Onderwerp</label>
+                    <input id="warranty-message-subject" class="form-control"></div>
+                <label>Bericht</label>
+                <div class="warranty-message-toolbar">
+                    <button type="button" data-command="bold"><b>B</b></button>
+                    <button type="button" data-command="italic"><i>I</i></button>
+                    <button type="button" data-command="underline"><u>U</u></button>
+                </div>
+                <div id="warranty-message-body" class="warranty-message-body" contenteditable="true"></div>
+            </div>`,
+            buttons: {
+                confirm: {label: "Verzenden", className: "btn-primary", callback: () => false},
+                cancel: {label: "Annuleer", className: "btn-secondary", callback: () => true}
+            },
+            onShown: () => {
+                const visible_modals = document.querySelectorAll(".bootbox.modal.show");
+                const modal = visible_modals[visible_modals.length - 1];
+                modal?.classList.add("warranty-message-dialog");
+                modal?.querySelector(".modal-dialog")?.classList.add("modal-dialog-scrollable");
+                document.getElementById("warranty-message-subject").value = defaults.message_subject || "";
+                document.getElementById("warranty-message-body").innerHTML = defaults.message_content || "";
+                modal?.querySelectorAll("[data-command]").forEach(button => button.addEventListener("click", () => {
+                    document.execCommand(button.dataset.command, false, null);
+                    document.getElementById("warranty-message-body").focus();
+                }));
+                const send_button = modal?.querySelector(".bootbox-accept");
+                send_button?.addEventListener("click", async () => {
+                    if (sending) return;
+                    sending = true;
+                    send_button.disabled = true;
+                    try {
+                        const payload = {
+                            id: incident.id,
+                            warranty_state,
+                            student: document.getElementById("warranty-student")?.checked || false,
+                            coaccount: document.getElementById("warranty-coaccount")?.checked || false,
+                            recipients: [...modal.querySelectorAll(".warranty-extra-recipient:checked")].map(input => input.value),
+                            message_subject: document.getElementById("warranty-message-subject").value,
+                            message_content: document.getElementById("warranty-message-body").innerHTML
+                        };
+                        const response = await fetch(Flask.url_for("incident.warranty_message"), {method: "POST", body: JSON.stringify(payload)});
+                        const result = await response.json();
+                        if (!response.ok || result.status !== "ok") {
+                            new AlertPopup("error", result.msg || "Bericht kon niet worden verstuurd");
+                            $(modal).modal("hide");
+                            return;
+                        }
+                        popup_result = true;
+                        new AlertPopup("ok", result.msg);
+                        $(modal).modal("hide");
+                    } catch (error) {
+                        new AlertPopup("error", "Bericht kon niet worden verstuurd");
+                        $(modal).modal("hide");
+                    }
+                });
+            },
+            onHidden: () => resolve(popup_result)
+        });
+    });
+}
+
+const __rollback_warranty_state = async pending => {
+    try {
+        const response = await fetch_update("incident.warranty_state", {id: pending.id, warranty_state: pending.previous_warranty_state});
+        if (!response) new AlertPopup("error", "De vorige garantiestatus kon niet worden hersteld");
+    } catch (error) {
+        new AlertPopup("error", "De vorige garantiestatus kon niet worden hersteld");
+    }
+    datatable_reload_table();
+}
+
 const meta = await fetch_get("incident.meta")
 
 const __repair_form = async (incident = null, history = "") => {
 
     let repair = null;
+    let saving = false;
     const title = incident ? "Herstelling aanpassen (<span style='color:orangered;'>verplichte velden</span>)" : "Nieuwe herstelling (<span style='color:orangered;'>verplichte velden</span>)";
     const form = await fetch_get("incident.form", {form: "repair"});
     form.template = form.template.replace("{{ form_css_file }}", "<link href=\"static/css/form.css\" rel=\"stylesheet\">\n");
@@ -41,11 +152,25 @@ const __repair_form = async (incident = null, history = "") => {
 
         // Confirm button pushed
         document.querySelector(".bootbox .btn-primary").addEventListener("click", async e => {
+            if (saving) return;
+            saving = true;
             if (await repair.save()) {
-                datatable_reload_table();
+                const pending = repair.warranty_message_pending;
+                const dialog_hidden = new Promise(resolve => bootbox_dialog.one("hidden.bs.modal", resolve));
                 if (bootbox_dialog) bootbox_dialog.modal("hide");
+                await dialog_hidden;
+                datatable_reload_table();
+                if (pending) {
+                    let message_sent = false;
+                    try {
+                        message_sent = await send_warranty_message({id: pending.id, warranty_state: pending.warranty_state});
+                    } catch (error) {
+                        new AlertPopup("error", "Bericht kon niet worden verstuurd");
+                    }
+                    if (!message_sent) await __rollback_warranty_state(pending);
+                }
                 autologout_enable();
-            }
+            } else saving = false;
         });
     }
 }

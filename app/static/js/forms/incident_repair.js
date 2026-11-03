@@ -13,6 +13,7 @@ export class IncidentRepair {
         this.__stored_password = this.incident ? this.incident.laptop_owner_password : "";
         this.attachments = [];
         this.attachments_to_delete = [];
+        this.warranty_message_pending = null;
     }
 
     __attachment_add_view_event_listener = () => {
@@ -97,8 +98,11 @@ export class IncidentRepair {
     ATTACHMENT_LINE_TEMPLATE = (file) => {
         const in_m4s_database = "m4s_reference" in file && file.m4s_reference !== "";
         const m4s_enable = this.lis_type_field.value === "hardware";
+        const attachment_id = file.name.replaceAll(" ", "");
+        const checked = in_m4s_database ? "checked" : "";
+        const disabled = in_m4s_database || !m4s_enable ? "disabled" : "";
         let line = `<div class="form-element group-spare-laptop">
-                    <input type="checkbox" class="check-attachment-m4s" data-id=${file.name.replaceAll(" ", "")} style="padding:2px;line-height:1;" ${in_m4s_database ? "checked" : ""} ${(in_m4s_database || !m4s_enable) ? "disabled" : ""}>M4S?&nbsp;`
+                    <input type="checkbox" class="check-attachment-m4s" data-id=${attachment_id} style="padding:2px;line-height:1;" ${checked} ${disabled}>M4S?&nbsp;`
         if (!in_m4s_database) line += `<a type="button" class="btn-attachment-remove btn btn-danger" data-id=${file.name.replaceAll(" ", "")} style="padding:2px;line-height:1;" : ""}>
                     <i class="fa-solid fa-xmark" title="Bijlage verwijderen"></i></a>&nbsp;`
         if ("id" in file) {
@@ -123,6 +127,7 @@ export class IncidentRepair {
     __display_elements = async (incident_type) => {
         // Update harware specific fields
         document.getElementById("hardware-repair-group").hidden = incident_type !== "hardware"
+        this.__display_warranty_state(incident_type);
         if (incident_type === "hardware") { // make sure that a valid location is displayed, and highlight if it is changed.  Make clear the info field is required
             if (!(this.incident && this.incident.m4s_guid !== null)) {
                 // hardware incident, but no info or m4s error added yet
@@ -138,6 +143,12 @@ export class IncidentRepair {
         }
         // rebuild the list of attachments, i.e. enable or disable checkboxes
         this.__show_attachment_list(this.attachments, true);
+    }
+
+    __display_warranty_state = (incident_type) => {
+        const is_hardware = incident_type === "hardware";
+        document.getElementById("warranty-state-group").hidden = !is_hardware;
+        if (!is_hardware && this.warranty_state_field) this.warranty_state_field.value = "warranty_none";
     }
 
     __password_field_hide = (hide = true) => {
@@ -172,6 +183,7 @@ export class IncidentRepair {
         this.location_field = document.getElementById("location-field");
         this.incident_state_field = document.getElementById("incident-state-field");
         this.lis_type_field = document.getElementById("lis-type-field");
+        this.warranty_state_field = document.getElementById("warranty-state-field");
         this.info_field = document.getElementById("info-field");
         this.spare_field = document.getElementById("spare-field");
         this.m4s_category_field = document.getElementById("m4s-category-field");
@@ -368,7 +380,9 @@ export class IncidentRepair {
             this.meta.option.laptop_serial = [{value: this.incident.laptop_serial, label: this.incident.laptop_name}];
 
             this.incident.location = this.incident.current_location;
+            this.incident.warranty_state = this.incident.warranty_state || "warranty_none";
             await form_populate(this.incident, this.meta);
+            this.__display_warranty_state(this.incident.incident_type);
             this.owner_field_options = [{id: this.incident.laptop_owner_id, text: this.incident.laptop_owner_name}];
 
             // Get attachments
@@ -384,8 +398,10 @@ export class IncidentRepair {
             document.querySelectorAll(".required").forEach(i => i.classList.toggle("required"));
             this.__display_elements(this.incident.incident_type);
         } else { // new repair
-            const defaults = Object.assign(this.meta.default, {incident_state: "transition", incident_type: "software", laptop_owner_password: "", category: "repair"}); // clear password and lis field
+            const defaults = Object.assign(this.meta.default, {incident_state: "transition", incident_type: "software", warranty_state: "warranty_none",
+                laptop_owner_password: "", category: "repair"}); // clear password and lis field
             await form_populate(defaults, this.meta);
+            this.__display_warranty_state("software");
             const students = await fetch_get("student.student", {fields: "naam,voornaam,klasgroepcode,leerlingnummer"})
             const student_data = students ? students.map(e => ({id: "leerling-" + e.leerlingnummer, text: `${e.naam} ${e.voornaam} ${e.klasgroepcode}`})) : []
             const staff = await fetch_get("staff.staff", {fields: "naam,voornaam,code"})
@@ -420,6 +436,8 @@ export class IncidentRepair {
         // checkboxes are present only when selected and have the value "on" => convert
         document.getElementById("incident-form").querySelectorAll("input[type='checkbox']").forEach(c => data[c.name] = c.name in data)
         data.laptop_owner_password = data.laptop_owner_password || this.__stored_password;
+        const warranty_state = data.incident_type === "hardware" ? (data.warranty_state || "warranty_none") : "warranty_none";
+        data.warranty_state = warranty_state;
         if (this.incident_update) {
             if (data.lis_badge_id === "" || data.laptop_owner_id === "" || data.laptop_name === "" || data.incident_type === "hardware" && data.info === "" && this.incident.m4s_guid === null) {
                 new AlertPopup("warning", "Roodgekleurde velden invullen aub.");
@@ -427,10 +445,18 @@ export class IncidentRepair {
                 return false
             }
             data.id = this.incident.id;
+            const previous_warranty_state = this.incident.warranty_state || "warranty_none";
             if (data.incident_type !== "hardware") data.m4s_problem_type_guid = "";  // make sure to clear this field, else it pops up in different places
             const laptop_select_option = document.getElementById("laptop-field").selectedOptions[0];
             data.laptop_name = laptop_select_option ? laptop_select_option.label : "";
-            await fetch_update("incident.incident", data);
+            const update_result = await fetch_update("incident.incident", data);
+            if (!update_result) {
+                busy_indication_off();
+                return false;
+            }
+            if (warranty_state !== "warranty_none") {
+                this.warranty_message_pending = {id: this.incident.id, warranty_state, previous_warranty_state};
+            }
 
             // check for new or deleted attachments
             if (this.attachments_to_delete.length > 0) await fetch_delete("incident.attachment", {ids: this.attachments_to_delete.join(",")})
@@ -493,6 +519,13 @@ export class IncidentRepair {
             data.lis_badge_id = parseInt(data.lis_badge_id);
             if (data["incident_type"] !== "hardware") data["m4s_problem_type_guid"] = ""
             const resp = await fetch_post("incident.incident", data);
+            if (!resp || !resp.data || !resp.data.id) {
+                busy_indication_off();
+                return false;
+            }
+            if (warranty_state !== "warranty_none") {
+                this.warranty_message_pending = {id: resp.data.id, warranty_state, previous_warranty_state: "warranty_none"};
+            }
             if (this.attachments.length > 0) {
                 document.getElementById("incident-id-field").value = resp.data.id;
                 for (const attachment of this.attachments) {

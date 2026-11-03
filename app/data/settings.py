@@ -99,6 +99,12 @@ default_configuration_settings = {
 
     'ss-student-message-template': ('', Settings.SETTING_TYPE.E_STRING),
     'ss-coaccount-message-template': ('', Settings.SETTING_TYPE.E_STRING),
+    'warranty_repair_to_be_approved': ('<p>Beste %%VOORNAAM%%,</p><p>De herstelling van uw laptop wacht op goedkeuring.</p><p>%%SIGNATURE%%</p>', Settings.SETTING_TYPE.E_STRING),
+    'warranty_repair_approved': ('<p>Beste %%VOORNAAM%%,</p><p>De herstelling van uw laptop is goedgekeurd.</p><p>%%SIGNATURE%%</p>', Settings.SETTING_TYPE.E_STRING),
+    'warranty_invoice_approved': ('<p>Beste %%VOORNAAM%%,</p><p>De Signpost-factuur voor de herstelling van uw laptop is goedgekeurd.</p><p>%%SIGNATURE%%</p>', Settings.SETTING_TYPE.E_STRING),
+    'warranty_repair_to_be_approved_recipients': ([], Settings.SETTING_TYPE.E_YAML),
+    'warranty_repair_approved_recipients': ([], Settings.SETTING_TYPE.E_YAML),
+    'warranty_invoice_approved_recipients': ([], Settings.SETTING_TYPE.E_YAML),
 
     'cron-scheduler-template': ('', Settings.SETTING_TYPE.E_STRING),
     'cron-enable-modules': ({}, Settings.SETTING_TYPE.E_JSON),
@@ -116,7 +122,12 @@ default_configuration_settings = {
 
     'lis-badge-rfid': ({}, Settings.SETTING_TYPE.E_JSON),
     'lis-locations': ({}, Settings.SETTING_TYPE.E_YAML),
-    'lis-state': ({}, Settings.SETTING_TYPE.E_YAML),
+    'lis-state': ({
+        'warranty_none': {'label': 'NVT', 'color': 'orange'},
+        'warranty_repair_to_be_approved': {'label': 'Wacht op goedkeuring om te herstellen', 'color': 'orange'},
+        'warranty_repair_approved': {'label': 'Herstelling goedgekeurd', 'color': 'orange'},
+        'warranty_invoice_approved': {'label': 'Signpost factuur goedgekeurd', 'color': 'orange'},
+    }, Settings.SETTING_TYPE.E_YAML),
     'lis-incident-types': ({}, Settings.SETTING_TYPE.E_YAML),
     'lis-categories': ({}, Settings.SETTING_TYPE.E_YAML),
     'lis-home-locations': ({}, Settings.SETTING_TYPE.E_YAML),
@@ -151,11 +162,21 @@ def set_configuration_setting(setting, value, user=None):
 def get_configuration_setting(setting, convert_to_string=False, user=None):
     found, value = get_setting(setting, user=user, convert_to_string=convert_to_string)
     if found:
+        if setting == "lis-state":
+            states = yaml.safe_load(value) if isinstance(value, str) else value
+            states = dict(states or {})
+            defaults = default_configuration_settings[setting][0]
+            for key, state in defaults.items():
+                states.setdefault(key, state)
+            return yaml.safe_dump(states, sort_keys=False, allow_unicode=True) if convert_to_string else states
         return value
     else:
         default_setting = default_configuration_settings[setting]
         add_setting(setting, default_setting[0], default_setting[1], user=user)
-        return default_setting[0]
+        value = default_setting[0]
+        if setting == "lis-state" and convert_to_string:
+            return yaml.safe_dump(value, sort_keys=False, allow_unicode=True)
+        return value
 
 
 setting_changed_cb = {}

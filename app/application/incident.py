@@ -112,6 +112,11 @@ def __password_update(incident, password, must_update=False):
 
 def add(data):
     try:
+        data["warranty_state"] = data.get("warranty_state") or "warranty_none"
+        if data.get("incident_type") != "hardware":
+            data["warranty_state"] = "warranty_none"
+        elif data["warranty_state"] not in {"warranty_none", "warranty_repair_to_be_approved", "warranty_repair_approved", "warranty_invoice_approved"}:
+            return {"status": "error", "msg": "Ongeldige garantiestatus"}
         data["time"] = datetime.datetime.now()
         data["home_incident_owner"] = current_user.username
         data["current_incident_owner"] = current_user.username
@@ -142,7 +147,8 @@ def add(data):
                     history = dl.history.add(history_data)
                     return_msg += f"<br> Opgepast: {ret['msg']}"
                     return_status = "warning"
-            message_send_to_coaccount(incident)
+            if incident.incident_type != "hardware" or incident.warranty_state == "warranty_none":
+                message_send_to_coaccount(incident)
             log.info(f'{sys._getframe().f_code.co_name}: incident added, {data}')
             return {"data": {"status": return_status, "id": incident.id, "msg": return_msg}}
         log.error(f'{sys._getframe().f_code.co_name}: incident could not be add')
@@ -187,6 +193,13 @@ def update(data):
     try:
         incident = dl.incident.get(("id", "=", data["id"]))
         if incident:
+            target_incident_type = data.get("incident_type", incident.incident_type)
+            if target_incident_type != "hardware":
+                data["warranty_state"] = "warranty_none"
+            else:
+                data["warranty_state"] = data.get("warranty_state", incident.warranty_state or "warranty_none")
+                if data["warranty_state"] not in {"warranty_none", "warranty_repair_to_be_approved", "warranty_repair_approved", "warranty_invoice_approved"}:
+                    return {"status": "error", "msg": "Ongeldige garantiestatus"}
             current_laptop_owner_password_default = incident.laptop_owner_password_default
             # if the info field is empty, but the previous was not, copy that...
             # don't copy when sending a message, i.e. the message can be empty
@@ -461,6 +474,138 @@ def message_send(data):
             return {"status": "ok", "msg": f"Bericht is verstuurd"}
         log.error(f'{sys._getframe().f_code.co_name}: incident not found, {data["id"]}')
         return {"status": "error", "msg": f'Incident met id {data["id"]} niet gevonden'}
+    except Exception as e:
+        log.error(f'{sys._getframe().f_code.co_name}: {e}')
+        return {"status": "error", "msg": str(e)}
+
+def warranty_message_default(incident_id, warranty_state):
+    try:
+        if warranty_state not in {"warranty_repair_to_be_approved", "warranty_repair_approved", "warranty_invoice_approved"}:
+            return {"status": "error", "msg": "Onbekende garantiestatus"}
+        incident = dl.incident.get(("id", "=", incident_id))
+        if not incident or incident.incident_type != "hardware" or incident.warranty_state != warranty_state:
+            return {"status": "error", "msg": "Incident of garantiestatus komt niet overeen"}
+        states = dl.settings.get_configuration_setting("lis-state") or {}
+        state_config = states.get(warranty_state)
+        if not state_config:
+            return {"status": "error", "msg": f"Garantiestatus {warranty_state} is niet geconfigureerd"}
+        owner = None
+        if incident.laptop_type == "leerling":
+            owner = dl.student.get(("leerlingnummer", "=", incident.laptop_owner_id))
+        elif incident.laptop_type == "personeel":
+            owner = dl.staff.get(("code", "=", incident.laptop_owner_id))
+        if not owner:
+            return {"status": "error", "msg": "Eigenaar niet gevonden"}
+        staff = dl.staff.get(("code", "=", current_user.username))
+        signature = f"{staff.naam} {staff.voornaam}" if staff else "ICT"
+        template = dl.settings.get_configuration_setting(warranty_state) or ""
+        send_to_overwrite = dl.settings.get_configuration_setting("generic-ss-send-to") or ""
+        forced_recipients = []
+        for code in (item.strip() for item in send_to_overwrite.split(",")):
+            recipient = dl.staff.get(("code", "=", code)) if code else None
+            if recipient:
+                label = f"{recipient.naam} {recipient.voornaam}".strip()
+                forced_recipients.append({"code": code, "label": label or code})
+        replacements = {
+            "%%VOORNAAM%%": owner.voornaam,
+            "%%NAAM%%": owner.naam,
+            "%%SIGNATURE%%": signature,
+            "%%LAPTOP%%": incident.laptop_name or "",
+            "%%SCHOOL%%": "Campus Sint-Ursula Lier",
+        }
+        for variable, value in replacements.items():
+            template = template.replace(variable, str(value or ""))
+        is_student = incident.laptop_type == "leerling"
+        return {"message_subject": state_config["label"], "message_content": template,
+                "student_name": f"{owner.naam} {owner.voornaam}", "can_message_student": is_student,
+                "can_message_coaccount": is_student and warranty_state != "warranty_invoice_approved",
+                "recipient_override": bool(send_to_overwrite.strip()), "forced_recipients": forced_recipients}
+    except Exception as e:
+        log.error(f'{sys._getframe().f_code.co_name}: {e}')
+        return {"status": "error", "msg": str(e)}
+
+def warranty_message_recipients(warranty_state):
+    allowed_states = {"warranty_repair_to_be_approved", "warranty_repair_approved", "warranty_invoice_approved"}
+    if warranty_state not in allowed_states:
+        return []
+    return dl.settings.get_configuration_setting(f"{warranty_state}_recipients") or []
+
+def warranty_message_send(data):
+    try:
+        incident = dl.incident.get(("id", "=", data.get("id")))
+        warranty_state = data.get("warranty_state")
+        valid_states = {"warranty_repair_to_be_approved", "warranty_repair_approved", "warranty_invoice_approved"}
+        if not incident or incident.incident_type != "hardware" or incident.warranty_state != warranty_state or warranty_state not in valid_states:
+            return {"status": "error", "msg": "Incident of garantiestatus komt niet overeen"}
+        owner = None
+        if incident.laptop_type == "leerling":
+            owner = dl.student.get(("leerlingnummer", "=", incident.laptop_owner_id))
+        elif incident.laptop_type == "personeel":
+            owner = dl.staff.get(("code", "=", incident.laptop_owner_id))
+        if not owner:
+            return {"status": "error", "msg": "Eigenaar niet gevonden"}
+        sender_staff = dl.staff.get(("code", "=", current_user.username))
+        sender = sender_staff.ss_internal_nbr if sender_staff and sender_staff.ss_internal_nbr else "lis"
+        recipients = []
+        send_to_overwrite = dl.settings.get_configuration_setting("generic-ss-send-to") or ""
+        if send_to_overwrite.strip():
+            for code in (item.strip() for item in send_to_overwrite.split(",")):
+                staff = dl.staff.get(("code", "=", code)) if code else None
+                if staff and staff.ss_internal_nbr:
+                    recipients.append((staff.ss_internal_nbr, 0))
+        else:
+            if warranty_state != "warranty_invoice_approved":
+                if data.get("student") and incident.laptop_type == "leerling":
+                    recipients.append((owner.leerlingnummer, 0))
+                if data.get("coaccount") and incident.laptop_type == "leerling":
+                    recipients.extend((owner.leerlingnummer, account) for account in (1, 2))
+            allowed_recipients = warranty_message_recipients(warranty_state)
+            allowed_codes = set()
+            for recipient in allowed_recipients:
+                if isinstance(recipient, dict):
+                    code = recipient.get("code", recipient.get("value", ""))
+                else:
+                    code = recipient
+                allowed_codes.add(str(code))
+            for code in set(str(value) for value in data.get("recipients", [])).intersection(allowed_codes):
+                staff = dl.staff.get(("code", "=", code))
+                if staff and staff.ss_internal_nbr:
+                    recipients.append((staff.ss_internal_nbr, 0))
+        recipients = list(dict.fromkeys(recipients))
+        if not recipients:
+            return {"status": "error", "msg": "Selecteer minstens één ontvanger"}
+        message_subject = data.get("message_subject", "")
+        message_content = data.get("message_content", "")
+        for recipient, account in recipients:
+            result = dl.smartschool.smartschool.send_message(recipient, sender, message_subject, message_content, account)
+            if result != 0:
+                return {"status": "error", "msg": f"Smartschool kon het bericht niet versturen ({result})"}
+        clean_content = re.sub(r"<.*?>", "", message_content)
+        history_data = {"incident_id": incident.id, "priority": incident.priority,
+                        "info": f"Garantiebericht verstuurd:(O) {message_subject}(I) {clean_content}", "incident_type": incident.incident_type,
+                        "incident_state": incident.incident_state, "current_location": incident.current_location,
+                        "current_incident_owner": incident.current_incident_owner, "time": datetime.datetime.now()}
+        dl.history.add(history_data)
+        return {"status": "ok", "msg": "Bericht is verstuurd"}
+    except Exception as e:
+        log.error(f'{sys._getframe().f_code.co_name}: {e}')
+        return {"status": "error", "msg": str(e)}
+
+def warranty_state_restore(data):
+    try:
+        incident = dl.incident.get(("id", "=", data.get("id")))
+        if not incident:
+            return {"status": "error", "msg": "Incident niet gevonden"}
+        warranty_state = data.get("warranty_state", "warranty_none")
+        valid_states = {"warranty_none", "warranty_repair_to_be_approved", "warranty_repair_approved", "warranty_invoice_approved"}
+        if incident.incident_type != "hardware":
+            warranty_state = "warranty_none"
+        if warranty_state not in valid_states:
+            return {"status": "error", "msg": "Ongeldige garantiestatus"}
+        updated = dl.incident.update(incident, {"warranty_state": warranty_state})
+        if not updated:
+            return {"status": "error", "msg": "De garantiestatus kon niet worden hersteld"}
+        return {"id": incident.id}
     except Exception as e:
         log.error(f'{sys._getframe().f_code.co_name}: {e}')
         return {"status": "error", "msg": str(e)}
