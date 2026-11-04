@@ -37,6 +37,11 @@ def show():
     data = {"filters": [{"id": "incident-id", "value": id_to_show}]}
     return render_template("incident.html", table_config=config.create_table_config(), view_data=data)
 
+@bp_incident.route('/warrantyshow', methods=['GET'])
+@login_required
+def warranty_show():
+    return render_template("warranty.html", table_config=warranty_config.create_table_config())
+
 # invoked when the client requests data from the database
 al.socketio.subscribe_on_type("incident-datatable-data", lambda type, data: datatable_get_data(config, data))
 
@@ -343,6 +348,22 @@ class Config(DatatableConfig):
         return template
 
 config = Config("incident", "Incidenten")
+
+class WarrantyConfig(Config):
+    def pre_sql_filter(self, q, filters):
+        q = super().pre_sql_filter(q, filters)
+        q = q.filter(dl.incident.Incident.warranty_state != WARRANTY_NONE)
+        for item in filters:
+            if item['id'] == 'warranty-state' and item['value'] != 'all':
+                q = q.filter(dl.incident.Incident.warranty_state == item['value'])
+        return q
+
+    def pre_sql_search(self, search):
+        incident_model = dl.incident.Incident
+        return [incident_model.m4s_reference.like(search), incident_model.laptop_owner_name.like(search)]
+
+warranty_config = WarrantyConfig("incident-warranty", "Garantie")
+al.socketio.subscribe_on_type("incident-warranty-datatable-data", lambda type, data: datatable_get_data(warranty_config, data))
 
 @bp_incident.route('/mincidentshow', methods=['GET'])
 @login_required

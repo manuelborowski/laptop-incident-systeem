@@ -181,6 +181,49 @@ settings_formio = {
           ]
         },
         {
+          "label": "Garantie",
+          "tableView": false,
+          "validateWhenHidden": false,
+          "key": "incidents-warranty",
+          "type": "container",
+          "input": true,
+          "components": [
+            {
+              "title": "Garantie",
+              "theme": "primary",
+              "collapsible": true,
+              "key": "incidenten-garantie",
+              "type": "panel",
+              "label": "Algemeen",
+              "collapsed": true,
+              "input": false,
+              "tableView": false,
+              "components": [
+                {
+                  "label": "Opslaan",
+                  "showValidations": false,
+                  "theme": "warning",
+                  "tableView": false,
+                  "key": "submit",
+                  "type": "button",
+                  "input": true,
+                  "saveOnEnter": false
+                },
+                {
+                  "label": "Lijst template (YAML)",
+                  "applyMaskOn": "change",
+                  "autoExpand": false,
+                  "tableView": true,
+                  "validateWhenHidden": false,
+                  "key": "incident-warranty-datatables-template",
+                  "type": "textarea",
+                  "input": true
+                }
+              ]
+            }
+          ]
+        },
+        {
           "label": "Incidenten historiek",
           "tableView": false,
           "validateWhenHidden": false,

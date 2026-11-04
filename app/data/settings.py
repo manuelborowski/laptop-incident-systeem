@@ -93,6 +93,16 @@ default_configuration_settings = {
 
     'user-datatables-template': ({}, Settings.SETTING_TYPE.E_YAML),
     'incident-datatables-template': ({}, Settings.SETTING_TYPE.E_YAML),
+    'incident-warranty-datatables-template': ([
+        {'data': 'm4s_reference', 'name': 'M4S'},
+        {'data': 'warranty_state', 'name': 'Garantie'},
+        {'data': 'time', 'name': 'Tijd'},
+        {'data': 'incident_state', 'name': 'Status'},
+        {'data': 'home_location', 'name': 'Thuis'},
+        {'data': 'm4s_problem_type_guid', 'name': 'M4S-type'},
+        {'data': 'laptop_owner_name', 'name': 'Eigenaar'},
+        {'data': 'info', 'name': 'Info'},
+    ], Settings.SETTING_TYPE.E_YAML),
     'incidentm-datatables-template': ({}, Settings.SETTING_TYPE.E_YAML),
     'incident-history-datatables-template': ({}, Settings.SETTING_TYPE.E_YAML),
     'spare-datatables-template': ({}, Settings.SETTING_TYPE.E_YAML),
