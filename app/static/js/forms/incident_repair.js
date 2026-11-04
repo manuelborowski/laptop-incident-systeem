@@ -148,7 +148,7 @@ export class IncidentRepair {
     __display_warranty_state = (incident_type) => {
         const is_hardware = incident_type === "hardware";
         document.getElementById("warranty-state-group").hidden = !is_hardware;
-        if (!is_hardware && this.warranty_state_field) this.warranty_state_field.value = "warranty_none";
+        if (!is_hardware && this.warranty_state_field) this.warranty_state_field.value = this.meta.warranty.none;
     }
 
     __password_field_hide = (hide = true) => {
@@ -380,7 +380,7 @@ export class IncidentRepair {
             this.meta.option.laptop_serial = [{value: this.incident.laptop_serial, label: this.incident.laptop_name}];
 
             this.incident.location = this.incident.current_location;
-            this.incident.warranty_state = this.incident.warranty_state || "warranty_none";
+            this.incident.warranty_state = this.incident.warranty_state || this.meta.warranty.none;
             await form_populate(this.incident, this.meta);
             this.__display_warranty_state(this.incident.incident_type);
             this.owner_field_options = [{id: this.incident.laptop_owner_id, text: this.incident.laptop_owner_name}];
@@ -398,7 +398,7 @@ export class IncidentRepair {
             document.querySelectorAll(".required").forEach(i => i.classList.toggle("required"));
             this.__display_elements(this.incident.incident_type);
         } else { // new repair
-            const defaults = Object.assign(this.meta.default, {incident_state: "transition", incident_type: "software", warranty_state: "warranty_none",
+            const defaults = Object.assign(this.meta.default, {incident_state: "transition", incident_type: "software", warranty_state: this.meta.warranty.none,
                 laptop_owner_password: "", category: "repair"}); // clear password and lis field
             await form_populate(defaults, this.meta);
             this.__display_warranty_state("software");
@@ -436,7 +436,7 @@ export class IncidentRepair {
         // checkboxes are present only when selected and have the value "on" => convert
         document.getElementById("incident-form").querySelectorAll("input[type='checkbox']").forEach(c => data[c.name] = c.name in data)
         data.laptop_owner_password = data.laptop_owner_password || this.__stored_password;
-        const warranty_state = data.incident_type === "hardware" ? (data.warranty_state || "warranty_none") : "warranty_none";
+        const warranty_state = data.incident_type === "hardware" ? (data.warranty_state || this.meta.warranty.none) : this.meta.warranty.none;
         data.warranty_state = warranty_state;
         if (this.incident_update) {
             if (data.lis_badge_id === "" || data.laptop_owner_id === "" || data.laptop_name === "" || data.incident_type === "hardware" && data.info === "" && this.incident.m4s_guid === null) {
@@ -445,7 +445,7 @@ export class IncidentRepair {
                 return false
             }
             data.id = this.incident.id;
-            const previous_warranty_state = this.incident.warranty_state || "warranty_none";
+            const previous_warranty_state = this.incident.warranty_state || this.meta.warranty.none;
             if (data.incident_type !== "hardware") data.m4s_problem_type_guid = "";  // make sure to clear this field, else it pops up in different places
             const laptop_select_option = document.getElementById("laptop-field").selectedOptions[0];
             data.laptop_name = laptop_select_option ? laptop_select_option.label : "";
@@ -454,7 +454,7 @@ export class IncidentRepair {
                 busy_indication_off();
                 return false;
             }
-            if (warranty_state !== "warranty_none") {
+            if (warranty_state !== this.meta.warranty.none) {
                 this.warranty_message_pending = {id: this.incident.id, warranty_state, previous_warranty_state};
             }
 
@@ -523,8 +523,8 @@ export class IncidentRepair {
                 busy_indication_off();
                 return false;
             }
-            if (warranty_state !== "warranty_none") {
-                this.warranty_message_pending = {id: resp.data.id, warranty_state, previous_warranty_state: "warranty_none"};
+            if (warranty_state !== this.meta.warranty.none) {
+                this.warranty_message_pending = {id: resp.data.id, warranty_state, previous_warranty_state: this.meta.warranty.none};
             }
             if (this.attachments.length > 0) {
                 document.getElementById("incident-id-field").value = resp.data.id;

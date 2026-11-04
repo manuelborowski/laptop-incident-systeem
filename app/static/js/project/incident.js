@@ -14,29 +14,21 @@ warranty_popup_style.textContent = [
     ".warranty-message-dialog .modal-body{min-height:0}",
     ".warranty-message-content{max-height:calc(100vh - 14rem);overflow-y:auto}",
     ".warranty-message-recipients{margin-bottom:12px}.warranty-recipient-option{display:block}",
-    ".warranty-message-subject{margin:12px 0}.warranty-message-toolbar button{min-width:34px}",
+    ".warranty-message-subject{margin:12px 0}.warranty-additional-recipients{margin:12px 0}.warranty-message-toolbar button{min-width:34px}",
     ".warranty-message-body{min-height:240px;max-height:50vh;overflow-y:auto;padding:10px;border:1px solid #ced4da;border-radius:4px;background:white}"
 ].join("");
 document.head.append(warranty_popup_style);
 
 const send_warranty_message = async incident => {
     const warranty_state = incident.warranty_state;
-    const defaults = await fetch_get("incident.warranty_message", {id: incident.id, warranty_state});
+    const defaults = await fetch_get("incident.warranty_message", {id: incident.id});
     if (!defaults || defaults.status === "error") return false;
-    const recipients = await fetch_get("incident.warranty_recipients", {warranty_state});
-    if (!Array.isArray(recipients)) return false;
-    const receiver_markup = defaults.recipient_override ? (defaults.forced_recipients || []).map(recipient =>
-        `<label class="warranty-recipient-option"><input type="checkbox" checked disabled> ${__html_escape(recipient.label)}</label>`
-    ).join("") : recipients.map(recipient => {
-        const code = typeof recipient === "string" ? recipient : recipient.code || recipient.value || "";
-        const label = typeof recipient === "string" ? recipient : recipient.label || recipient.name || recipient.code || recipient.value || "";
-        return `<label class="warranty-recipient-option"><input type="checkbox" class="warranty-extra-recipient" value="${__html_escape(code)}" checked> ${__html_escape(label)}</label>`;
-    }).join("");
-    const invoice_only = warranty_state === "warranty_invoice_approved";
-    const student_option = !defaults.recipient_override && defaults.can_message_student && !invoice_only ?
-        `<label><input id="warranty-student" type="checkbox" checked> Student (${__html_escape(defaults.student_name)})</label><br>` : "";
-    const coaccount_option = !defaults.recipient_override && defaults.can_message_coaccount && !invoice_only ?
-        `<label><input id="warranty-coaccount" type="checkbox" checked> Co-accounts</label><br>` : "";
+    const invoice_only = warranty_state === meta.warranty.invoice;
+    // create list of checkboxed recipients
+    const receiver_markup = defaults.recipients.map(recipient =>
+        `<label class="warranty-recipient-option"><input type="checkbox" class="warranty-extra-recipient" value="${__html_escape(recipient.value)}" checked> ${__html_escape(recipient.label)}</label>`
+    ).join("");
+    const additional_recipient_label = invoice_only ? "Extra e-mailadressen (gescheiden door komma's)" : "Extra Smartschoolcodes (gescheiden door komma's)";
     let popup_result = false;
     let sending = false;
     return new Promise(resolve => {
@@ -45,7 +37,11 @@ const send_warranty_message = async incident => {
             scrollable: true,
             title: defaults.message_subject,
             message: `<div class="warranty-message-content">
-                <div class="warranty-message-recipients">${student_option}${coaccount_option}${receiver_markup}</div>
+                <div class="warranty-message-recipients">${receiver_markup}</div>
+                <div class="warranty-additional-recipients">
+                    <label for="warranty-additional-recipients">${additional_recipient_label}</label>
+                    <input id="warranty-additional-recipients" class="form-control" type="text">
+                </div>
                 <div class="warranty-message-subject"><label for="warranty-message-subject">Onderwerp</label>
                     <input id="warranty-message-subject" class="form-control"></div>
                 <label>Bericht</label>
@@ -77,12 +73,12 @@ const send_warranty_message = async incident => {
                     sending = true;
                     send_button.disabled = true;
                     try {
+                        const additional_recipients = document.getElementById("warranty-additional-recipients").value
+                            .split(",").map(recipient => recipient.trim()).filter(Boolean);
                         const payload = {
                             id: incident.id,
-                            warranty_state,
-                            student: document.getElementById("warranty-student")?.checked || false,
-                            coaccount: document.getElementById("warranty-coaccount")?.checked || false,
                             recipients: [...modal.querySelectorAll(".warranty-extra-recipient:checked")].map(input => input.value),
+                            additional_recipients,
                             message_subject: document.getElementById("warranty-message-subject").value,
                             message_content: document.getElementById("warranty-message-body").innerHTML
                         };

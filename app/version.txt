@@ -153,3 +153,4 @@
 # 0.141: Signpost specific, add indicent number to info
 0.142: reuse lis badge number only when state is closed or cancelled
 0.143: introduced warranty_state
+0.144: depending on the warranty-state, send a message

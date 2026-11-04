@@ -1,5 +1,6 @@
 from email.policy import default
 from app import db
+from app.warranty import WARRANTY_NONE
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy import UnicodeText
 from app import data as dl
@@ -34,7 +35,7 @@ class Incident(db.Model, SerializerMixin):
     info = db.Column(UnicodeText, default=None)
     incident_type = db.Column(db.String(256), default=None)
     incident_state = db.Column(db.String(256), default=None)
-    warranty_state = db.Column(db.String(256), default="warranty_none", server_default="warranty_none", nullable=False)
+    warranty_state = db.Column(db.String(256), default=WARRANTY_NONE, server_default=WARRANTY_NONE, nullable=False)
     home_location = db.Column(db.String(256), default=None)
     home_incident_owner = db.Column(db.String(256), default=None)
     current_location = db.Column(db.String(256), default=None)

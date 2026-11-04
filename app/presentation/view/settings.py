@@ -554,6 +554,36 @@ settings_formio = {
           ]
         },
         {
+          "label": "Notificaties",
+          "tableView": false,
+          "validateWhenHidden": false,
+          "key": "warranty-notifications",
+          "type": "container",
+          "input": true,
+          "components": [
+            {
+              "title": "Notificaties",
+              "theme": "primary",
+              "collapsible": true,
+              "key": "warranty-notifications-panel",
+              "type": "panel",
+              "label": "Notificaties",
+              "collapsed": true,
+              "input": false,
+              "tableView": false,
+              "components": [
+                {"label": "Opslaan", "showValidations": false, "theme": "warning", "tableView": false, "key": "submit", "type": "button", "input": true},
+                {"label": "Wacht op goedkeuring om te herstellen: extra Smartschool ontvangers (YAML)", "applyMaskOn": "change", "autoExpand": false, "tableView": true,
+                 "validateWhenHidden": false, "key": "warranty_repair_to_be_approved_recipients", "type": "textarea", "input": true},
+                {"label": "Herstelling goedgekeurd: extra Smartschool ontvangers (YAML)", "applyMaskOn": "change", "autoExpand": false, "tableView": true,
+                 "validateWhenHidden": false, "key": "warranty_repair_approved_recipients", "type": "textarea", "input": true},
+                {"label": "Signpost factuur goedgekeurd: extra e-mailontvangers (YAML)", "applyMaskOn": "change", "autoExpand": false, "tableView": true,
+                 "validateWhenHidden": false, "key": "warranty_invoice_approved_recipients", "type": "textarea", "input": true}
+              ]
+            }
+          ]
+        },
+        {
           "label": "Cron-generic",
           "tableView": false,
           "key": "cron-generic",
@@ -824,36 +854,6 @@ settings_formio = {
           ]
         },
         {
-          "label": "Notificaties",
-          "tableView": false,
-          "validateWhenHidden": false,
-          "key": "warranty-notifications",
-          "type": "container",
-          "input": true,
-          "components": [
-            {
-              "title": "Notificaties",
-              "theme": "primary",
-              "collapsible": true,
-              "key": "warranty-notifications-panel",
-              "type": "panel",
-              "label": "Notificaties",
-              "collapsed": true,
-              "input": false,
-              "tableView": false,
-              "components": [
-                {"label": "Opslaan", "showValidations": false, "theme": "warning", "tableView": false, "key": "submit", "type": "button", "input": true},
-                {"label": "Wacht op goedkeuring om te herstellen: extra ontvangers (YAML)", "applyMaskOn": "change", "autoExpand": false, "tableView": true,
-                 "validateWhenHidden": false, "key": "warranty_repair_to_be_approved_recipients", "type": "textarea", "input": true},
-                {"label": "Herstelling goedgekeurd: extra ontvangers (YAML)", "applyMaskOn": "change", "autoExpand": false, "tableView": true,
-                 "validateWhenHidden": false, "key": "warranty_repair_approved_recipients", "type": "textarea", "input": true},
-                {"label": "Signpost factuur goedgekeurd: extra ontvangers (YAML)", "applyMaskOn": "change", "autoExpand": false, "tableView": true,
-                 "validateWhenHidden": false, "key": "warranty_invoice_approved_recipients", "type": "textarea", "input": true}
-              ]
-            }
-          ]
-        },
-        {
           "label": "incident types",
           "tableView": false,
           "validateWhenHidden": false,
@@ -978,95 +978,6 @@ settings_formio = {
           ]
         },
         {
-          "label": "Emailserver",
-          "tableView": false,
-          "key": "emailserver",
-          "type": "container",
-          "input": true,
-          "components": [
-            {
-              "title": "E-mail server instellingen",
-              "theme": "primary",
-              "collapsible": true,
-              "key": "emailserver",
-              "type": "panel",
-              "label": "E-mail server settings",
-              "input": false,
-              "tableView": false,
-              "components": [
-                {
-                  "label": "Submit",
-                  "showValidations": false,
-                  "theme": "warning",
-                  "tableView": false,
-                  "key": "submit",
-                  "type": "button",
-                  "input": true
-                },
-                {
-                  "label": "Aantal keer dat een e-mail geprobeerd wordt te verzenden",
-                  "labelPosition": "left-left",
-                  "mask": false,
-                  "spellcheck": false,
-                  "tableView": false,
-                  "delimiter": false,
-                  "requireDecimal": false,
-                  "inputFormat": "plain",
-                  "key": "email-send-max-retries",
-                  "type": "number",
-                  "input": true
-                },
-                {
-                  "label": "Tijd (seconden) tussen het verzenden van e-mails",
-                  "labelPosition": "left-left",
-                  "mask": false,
-                  "spellcheck": true,
-                  "tableView": false,
-                  "persistent": false,
-                  "delimiter": false,
-                  "requireDecimal": false,
-                  "inputFormat": "plain",
-                  "key": "email-task-interval",
-                  "type": "number",
-                  "input": true
-                },
-                {
-                  "label": "Max aantal e-mails per minuut",
-                  "labelPosition": "left-left",
-                  "mask": false,
-                  "spellcheck": true,
-                  "tableView": false,
-                  "persistent": false,
-                  "delimiter": false,
-                  "requireDecimal": false,
-                  "inputFormat": "plain",
-                  "key": "emails-per-minute",
-                  "type": "number",
-                  "input": true
-                },
-                {
-                  "label": "Basis URL",
-                  "labelPosition": "left-left",
-                  "tableView": true,
-                  "key": "email-base-url",
-                  "type": "textfield",
-                  "input": true
-                },
-                {
-                  "label": "E-mails mogen worden verzonden",
-                  "tableView": false,
-                  "persistent": false,
-                  "key": "email-enable-send-email",
-                  "type": "checkbox",
-                  "input": true,
-                  "defaultValue": false
-                }
-              ],
-              "collapsed": true
-            }
-          ]
-        },
-        {
           "label": "Logging",
           "tableView": false,
           "key": "logging",
@@ -1105,45 +1016,6 @@ settings_formio = {
             }
           ]
         },
-        {
-          "label": "Help",
-          "tableView": false,
-          "key": "help",
-          "type": "container",
-          "input": true,
-          "components": [
-            {
-              "title": "Help",
-              "theme": "primary",
-              "collapsible": true,
-              "key": "help",
-              "type": "panel",
-              "label": "E-mail server settings",
-              "collapsed": true,
-              "input": false,
-              "tableView": false,
-              "components": [
-                {
-                  "label": "Submit",
-                  "showValidations": false,
-                  "theme": "warning",
-                  "tableView": false,
-                  "key": "submit",
-                  "type": "button",
-                  "input": true
-                },
-                {
-                  "label": "Link een sleutel met een pagina in wikijs (YAML)",
-                  "autoExpand": false,
-                  "tableView": true,
-                  "key": "help-link-wikijs",
-                  "type": "textarea",
-                  "input": true
-                }
-              ]
-            }
-          ]
-        }
       ],
       "collapsed": true
     }

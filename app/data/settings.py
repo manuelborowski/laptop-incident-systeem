@@ -1,4 +1,5 @@
 from app import log, db
+from app.warranty import (WARRANTY_NONE, WARRANTY_REPAIR_TO_BE_APPROVED, WARRANTY_REPAIR_APPROVED, WARRANTY_INVOICE_APPROVED)
 from sqlalchemy.dialects.mysql import MEDIUMTEXT
 from sqlalchemy_serializer import SerializerMixin
 import json, yaml, re, sys
@@ -99,23 +100,17 @@ default_configuration_settings = {
 
     'ss-student-message-template': ('', Settings.SETTING_TYPE.E_STRING),
     'ss-coaccount-message-template': ('', Settings.SETTING_TYPE.E_STRING),
-    'warranty_repair_to_be_approved': ('<p>Beste %%VOORNAAM%%,</p><p>De herstelling van uw laptop wacht op goedkeuring.</p><p>%%SIGNATURE%%</p>', Settings.SETTING_TYPE.E_STRING),
-    'warranty_repair_approved': ('<p>Beste %%VOORNAAM%%,</p><p>De herstelling van uw laptop is goedgekeurd.</p><p>%%SIGNATURE%%</p>', Settings.SETTING_TYPE.E_STRING),
-    'warranty_invoice_approved': ('<p>Beste %%VOORNAAM%%,</p><p>De Signpost-factuur voor de herstelling van uw laptop is goedgekeurd.</p><p>%%SIGNATURE%%</p>', Settings.SETTING_TYPE.E_STRING),
-    'warranty_repair_to_be_approved_recipients': ([], Settings.SETTING_TYPE.E_YAML),
-    'warranty_repair_approved_recipients': ([], Settings.SETTING_TYPE.E_YAML),
-    'warranty_invoice_approved_recipients': ([], Settings.SETTING_TYPE.E_YAML),
+    WARRANTY_REPAIR_TO_BE_APPROVED: ('<p>Beste %%VOORNAAM%%,</p><p>De herstelling van uw laptop wacht op goedkeuring.</p><p>%%SIGNATURE%%</p>', Settings.SETTING_TYPE.E_STRING),
+    WARRANTY_REPAIR_APPROVED: ('<p>Beste %%VOORNAAM%%,</p><p>De herstelling van uw laptop is goedgekeurd.</p><p>%%SIGNATURE%%</p>', Settings.SETTING_TYPE.E_STRING),
+    WARRANTY_INVOICE_APPROVED: ('<p>Beste %%VOORNAAM%%,</p><p>De Signpost-factuur voor de herstelling van uw laptop is goedgekeurd.</p><p>%%SIGNATURE%%</p>', Settings.SETTING_TYPE.E_STRING),
+    f'{WARRANTY_REPAIR_TO_BE_APPROVED}_recipients': ([], Settings.SETTING_TYPE.E_YAML),
+    f'{WARRANTY_REPAIR_APPROVED}_recipients': ([], Settings.SETTING_TYPE.E_YAML),
+    f'{WARRANTY_INVOICE_APPROVED}_recipients': ([], Settings.SETTING_TYPE.E_YAML),
 
     'cron-scheduler-template': ('', Settings.SETTING_TYPE.E_STRING),
     'cron-enable-modules': ({}, Settings.SETTING_TYPE.E_JSON),
 
     'api-keys': ([], Settings.SETTING_TYPE.E_YAML),
-
-    'email-task-interval': (10, Settings.SETTING_TYPE.E_INT),
-    'emails-per-minute': (30, Settings.SETTING_TYPE.E_INT),
-    'email-send-max-retries': (2, Settings.SETTING_TYPE.E_INT),
-    'email-base-url': ('localhost:5000', Settings.SETTING_TYPE.E_STRING),
-    'email-enable-send-email': (False, Settings.SETTING_TYPE.E_BOOL),
 
     'popup-new-update-user': ({}, Settings.SETTING_TYPE.E_JSON),
     'popup-new-update-incident': ({}, Settings.SETTING_TYPE.E_JSON),
@@ -123,10 +118,10 @@ default_configuration_settings = {
     'lis-badge-rfid': ({}, Settings.SETTING_TYPE.E_JSON),
     'lis-locations': ({}, Settings.SETTING_TYPE.E_YAML),
     'lis-state': ({
-        'warranty_none': {'label': 'NVT', 'color': 'orange'},
-        'warranty_repair_to_be_approved': {'label': 'Wacht op goedkeuring om te herstellen', 'color': 'orange'},
-        'warranty_repair_approved': {'label': 'Herstelling goedgekeurd', 'color': 'orange'},
-        'warranty_invoice_approved': {'label': 'Signpost factuur goedgekeurd', 'color': 'orange'},
+        WARRANTY_NONE: {'label': 'NVT', 'color': 'orange'},
+        WARRANTY_REPAIR_TO_BE_APPROVED: {'label': 'Wacht op goedkeuring om te herstellen', 'color': 'orange'},
+        WARRANTY_REPAIR_APPROVED: {'label': 'Herstelling goedgekeurd', 'color': 'orange'},
+        WARRANTY_INVOICE_APPROVED: {'label': 'Signpost factuur goedgekeurd', 'color': 'orange'},
     }, Settings.SETTING_TYPE.E_YAML),
     'lis-incident-types': ({}, Settings.SETTING_TYPE.E_YAML),
     'lis-categories': ({}, Settings.SETTING_TYPE.E_YAML),
