@@ -36,6 +36,7 @@ class Incident(db.Model, SerializerMixin):
     incident_type = db.Column(db.String(256), default=None)
     incident_state = db.Column(db.String(256), default=None)
     warranty_state = db.Column(db.String(256), default=WARRANTY_NONE, server_default=WARRANTY_NONE, nullable=False)
+    warranty_cost = db.Column(db.Float, default=0, server_default="0", nullable=False)
     home_location = db.Column(db.String(256), default=None)
     home_incident_owner = db.Column(db.String(256), default=None)
     current_location = db.Column(db.String(256), default=None)

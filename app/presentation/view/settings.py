@@ -402,6 +402,16 @@ settings_formio = {
                   "input": true
                 },
                 {
+                  "content": "Beschikbare variabelen: %%VOORNAAM%%, %%NAAM%%, %%SIGNATURE%%, %%LAPTOP%%, %%SCHOOL%%, %%WARRANTY_COST%%, %%M4S_REFERENCE%%. Voorwaardelijk blok: %%IF_STANDARD_PASSWORD%% ... %%ENDIF%%.",
+                  "tag": "p",
+                  "class": "text-muted",
+                  "refreshOnChange": false,
+                  "key": "warranty-template-variables",
+                  "type": "htmlelement",
+                  "input": false,
+                  "tableView": false
+                },
+                {
                   "label": "Buiten garantie, wacht op goedkeuring om te herstellen (HTML)",
                   "applyMaskOn": "change",
                   "autoExpand": false,

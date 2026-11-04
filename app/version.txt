@@ -155,3 +155,4 @@
 0.143: introduced warranty_state
 0.144: depending on the warranty-state, send a message
 0.145: Added a warranty page
+0.146: add waranty-cost

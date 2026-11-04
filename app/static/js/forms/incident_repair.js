@@ -148,7 +148,15 @@ export class IncidentRepair {
     __display_warranty_state = (incident_type) => {
         const is_hardware = incident_type === "hardware";
         document.getElementById("warranty-state-group").hidden = !is_hardware;
+        document.getElementById("warranty-cost-group").hidden = !is_hardware;
         if (!is_hardware && this.warranty_state_field) this.warranty_state_field.value = this.meta.warranty.none;
+        this.__display_warranty_cost_required();
+    }
+
+    __display_warranty_cost_required = () => {
+        const required = this.warranty_state_field?.value === this.meta.warranty.repair_to_be_approved;
+        document.getElementById("warranty-cost-label")?.classList.toggle("required", required);
+        if (this.warranty_cost_field) this.warranty_cost_field.required = required;
     }
 
     __password_field_hide = (hide = true) => {
@@ -184,6 +192,7 @@ export class IncidentRepair {
         this.incident_state_field = document.getElementById("incident-state-field");
         this.lis_type_field = document.getElementById("lis-type-field");
         this.warranty_state_field = document.getElementById("warranty-state-field");
+        this.warranty_cost_field = document.getElementById("warranty-cost-field");
         this.info_field = document.getElementById("info-field");
         this.spare_field = document.getElementById("spare-field");
         this.m4s_category_field = document.getElementById("m4s-category-field");
@@ -381,6 +390,7 @@ export class IncidentRepair {
 
             this.incident.location = this.incident.current_location;
             this.incident.warranty_state = this.incident.warranty_state || this.meta.warranty.none;
+            this.incident.warranty_cost = this.incident.warranty_cost ?? 0;
             await form_populate(this.incident, this.meta);
             this.__display_warranty_state(this.incident.incident_type);
             this.owner_field_options = [{id: this.incident.laptop_owner_id, text: this.incident.laptop_owner_name}];
@@ -398,7 +408,7 @@ export class IncidentRepair {
             document.querySelectorAll(".required").forEach(i => i.classList.toggle("required"));
             this.__display_elements(this.incident.incident_type);
         } else { // new repair
-            const defaults = Object.assign(this.meta.default, {incident_state: "transition", incident_type: "software", warranty_state: this.meta.warranty.none,
+            const defaults = Object.assign(this.meta.default, {incident_state: "transition", incident_type: "software", warranty_state: this.meta.warranty.none, warranty_cost: 0,
                 laptop_owner_password: "", category: "repair"}); // clear password and lis field
             await form_populate(defaults, this.meta);
             this.__display_warranty_state("software");
@@ -426,6 +436,13 @@ export class IncidentRepair {
             form_populate({incident_state: this.meta.type[this.lis_type_field.value].incident_state[0], incident_type: this.lis_type_field.value}, this.meta);
 
         });
+        this.warranty_state_field.addEventListener("change", e => {
+            if (e.target.value === this.meta.warranty.repair_to_be_approved) this.warranty_cost_field.value = "";
+            if (e.target.value === this.meta.warranty.repair_approved && (this.incident?.warranty_state || this.meta.warranty.none) === this.meta.warranty.none) {
+                this.warranty_cost_field.value = this.meta.default_warranty_cost;
+            }
+            this.__display_warranty_cost_required();
+        });
     }
 
     save = async () => {
@@ -438,6 +455,11 @@ export class IncidentRepair {
         data.laptop_owner_password = data.laptop_owner_password || this.__stored_password;
         const warranty_state = data.incident_type === "hardware" ? (data.warranty_state || this.meta.warranty.none) : this.meta.warranty.none;
         data.warranty_state = warranty_state;
+        if (warranty_state === this.meta.warranty.repair_to_be_approved && !String(data.warranty_cost || "").trim()) {
+            new AlertPopup("warning", "Vul de garantiekost in.");
+            busy_indication_off();
+            return false;
+        }
         if (this.incident_update) {
             if (data.lis_badge_id === "" || data.laptop_owner_id === "" || data.laptop_name === "" || data.incident_type === "hardware" && data.info === "" && this.incident.m4s_guid === null) {
                 new AlertPopup("warning", "Roodgekleurde velden invullen aub.");

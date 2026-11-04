@@ -1,6 +1,7 @@
 import sys, datetime, re, random, requests, wonderwords, json, io
 from app.application.m4s import m4s
-from app.warranty import WARRANTY_NONE, WARRANTY_STATES, WARRANTY_MESSAGE_STATES, WARRANTY_INVOICE_APPROVED
+from app.warranty import (WARRANTY_NONE, WARRANTY_STATES, WARRANTY_MESSAGE_STATES, WARRANTY_INVOICE_APPROVED,
+                          WARRANTY_REPAIR_TO_BE_APPROVED, WARRANTY_REPAIR_APPROVED)
 from app import app, data as dl, application as al
 from flask_login import current_user
 from flask import request, make_response
@@ -114,6 +115,12 @@ def __password_update(incident, password, must_update=False):
 def add(data):
     try:
         data["warranty_state"] = data.get("warranty_state") or WARRANTY_NONE
+        warranty_cost_input = data.get("warranty_cost")
+        if data["warranty_state"] == WARRANTY_REPAIR_TO_BE_APPROVED and (warranty_cost_input is None or not str(warranty_cost_input).strip()):
+            return {"status": "error", "msg": "Vul de garantiekost in"}
+        data["warranty_cost"] = float(warranty_cost_input or 0)
+        if data["warranty_state"] == WARRANTY_REPAIR_APPROVED:
+            data["warranty_cost"] = app.config.get("WARRANTY_DEFAULT_COST", 0)
         if data.get("incident_type") != "hardware":
             data["warranty_state"] = WARRANTY_NONE
         elif data["warranty_state"] not in WARRANTY_STATES:
@@ -194,6 +201,7 @@ def update(data):
     try:
         incident = dl.incident.get(("id", "=", data["id"]))
         if incident:
+            previous_warranty_state = incident.warranty_state or WARRANTY_NONE
             target_incident_type = data.get("incident_type", incident.incident_type)
             if target_incident_type != "hardware":
                 data["warranty_state"] = WARRANTY_NONE
@@ -201,6 +209,19 @@ def update(data):
                 data["warranty_state"] = data.get("warranty_state", incident.warranty_state or WARRANTY_NONE)
                 if data["warranty_state"] not in WARRANTY_STATES:
                     return {"status": "error", "msg": "Ongeldige garantiestatus"}
+            warranty_cost_input = data.get("warranty_cost")
+            if data["warranty_state"] == WARRANTY_REPAIR_TO_BE_APPROVED and (warranty_cost_input is None or not str(warranty_cost_input).strip()):
+                return {"status": "error", "msg": "Vul de garantiekost in"}
+            try:
+                warranty_cost = float(warranty_cost_input or 0)
+            except (TypeError, ValueError):
+                return {"status": "error", "msg": "Vul een geldige garantiekost in"}
+            if data["warranty_state"] == WARRANTY_REPAIR_APPROVED:
+                if previous_warranty_state == WARRANTY_NONE:
+                    warranty_cost = app.config.get("WARRANTY_DEFAULT_COST", 0)
+                elif previous_warranty_state == WARRANTY_REPAIR_TO_BE_APPROVED:
+                    warranty_cost = incident.warranty_cost
+            data["warranty_cost"] = warranty_cost
             current_laptop_owner_password_default = incident.laptop_owner_password_default
             # if the info field is empty, but the previous was not, copy that...
             # don't copy when sending a message, i.e. the message can be empty
@@ -530,6 +551,8 @@ def warranty_message_default(incident_id):
             "%%SIGNATURE%%": signature,
             "%%LAPTOP%%": incident.laptop_name or "",
             "%%SCHOOL%%": "Campus Sint-Ursula Lier",
+            "%%WARRANTY_COST%%": f"€ {incident.warranty_cost:.2f}",
+            "%%M4S_REFERENCE%%": incident.m4s_reference or "",
         }
         for variable, recipient in replacements.items():
             template = template.replace(variable, str(recipient or ""))

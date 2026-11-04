@@ -2,7 +2,8 @@ from flask import Blueprint, render_template, request, redirect, url_for
 from flask_login import login_required, current_user
 from app.data.datatables import DatatableConfig
 from app import data as dl, application as al
-from app.warranty import WARRANTY_NONE, WARRANTY_INVOICE_APPROVED
+from app.warranty import (WARRANTY_NONE, WARRANTY_INVOICE_APPROVED, WARRANTY_REPAIR_TO_BE_APPROVED,
+                          WARRANTY_REPAIR_APPROVED)
 from app.presentation.view import datatable_get_data, fetch_return_error
 from app.application.m4s import m4s
 import json, sys, pathlib, datetime
@@ -177,12 +178,14 @@ def meta():
     help_wikijs = dl.settings.get_configuration_setting("help-link-wikijs")
     _, default_location = dl.settings.get_setting("default-location", current_user.username)
     default_password = app.config["AD_DEFAULT_PASSWORD"]
+    default_warranty_cost = app.config.get("WARRANTY_DEFAULT_COST", 0)
     return json.dumps({"option": {"location": location_options, "incident_state": state_options, "incident_type": type_options, "m4s_category": m4s_category_options, "m4s_problem_type_guid": m4s_problem_options,
                                   "home_location": home_location_options, "warranty_state": warranty_state_options},
                        "label": {"location": location_labels, "incident_state": state_labels, "category": category_labels, "incident_type": type_labels, "m4s_problem_type_guid": m4s_problem_labels},
-                       "warranty": {"none": WARRANTY_NONE, "invoice": WARRANTY_INVOICE_APPROVED},
+                       "warranty": {"none": WARRANTY_NONE, "invoice": WARRANTY_INVOICE_APPROVED,
+                                    "repair_to_be_approved": WARRANTY_REPAIR_TO_BE_APPROVED, "repair_approved": WARRANTY_REPAIR_APPROVED},
                        "default": {"location": default_location, "m4s_category": "none", "m4s_problem_type_guid": m4s_problem_options[0]["value"]},
-                       "default_password": default_password,
+                       "default_password": default_password, "default_warranty_cost": default_warranty_cost,
                        "category": categories,
                        "state": states,
                        "keyed_option": keyed_options,
