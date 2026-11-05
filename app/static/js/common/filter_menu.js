@@ -90,7 +90,8 @@ export class FilterMenu {
         if (store === null || store === []) return false
         for(const f of store) {
             const element = document.querySelector(`#${f.id}`);
-            if (element) element.value = f.value;
+            if (element && f.type === "checkbox") element.checked = f.value;
+            else if (element) element.value = f.value;
         }
         return true;
     }

@@ -440,6 +440,16 @@ settings_formio = {
                   "key": "warranty_invoice_approved",
                   "type": "textarea",
                   "input": true
+                },
+                {
+                  "label": "Onderwerp bij Signpost factuur goedgekeurd",
+                  "applyMaskOn": "change",
+                  "autoExpand": false,
+                  "tableView": true,
+                  "validateWhenHidden": false,
+                  "key": "warranty_invoice_approved_subject",
+                  "type": "textfield",
+                  "input": true
                 }
               ]
             }

@@ -156,3 +156,4 @@
 0.144: depending on the warranty-state, send a message
 0.145: Added a warranty page
 0.146: add waranty-cost
+0.147: approve invoice on Garanties page

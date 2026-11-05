@@ -359,6 +359,8 @@ class WarrantyConfig(Config):
         for item in filters:
             if item['id'] == 'warranty-state' and item['value'] != 'all':
                 q = q.filter(dl.incident.Incident.warranty_state == item['value'])
+            if item['id'] == 'include-invoice-approved' and not item['value']:
+                q = q.filter(dl.incident.Incident.warranty_state != WARRANTY_INVOICE_APPROVED)
         return q
 
     def pre_sql_search(self, search):

@@ -113,6 +113,7 @@ default_configuration_settings = {
     WARRANTY_REPAIR_TO_BE_APPROVED: ('<p>Beste %%VOORNAAM%%,</p><p>De herstelling van uw laptop wacht op goedkeuring.</p><p>%%SIGNATURE%%</p>', Settings.SETTING_TYPE.E_STRING),
     WARRANTY_REPAIR_APPROVED: ('<p>Beste %%VOORNAAM%%,</p><p>De herstelling van uw laptop is goedgekeurd.</p><p>%%SIGNATURE%%</p>', Settings.SETTING_TYPE.E_STRING),
     WARRANTY_INVOICE_APPROVED: ('<p>Beste %%VOORNAAM%%,</p><p>De Signpost-factuur voor de herstelling van uw laptop is goedgekeurd.</p><p>%%SIGNATURE%%</p>', Settings.SETTING_TYPE.E_STRING),
+    f'{WARRANTY_INVOICE_APPROVED}_subject': ('Signpost factuur goedgekeurd', Settings.SETTING_TYPE.E_STRING),
     f'{WARRANTY_REPAIR_TO_BE_APPROVED}_recipients': ([], Settings.SETTING_TYPE.E_YAML),
     f'{WARRANTY_REPAIR_APPROVED}_recipients': ([], Settings.SETTING_TYPE.E_YAML),
     f'{WARRANTY_INVOICE_APPROVED}_recipients': ([], Settings.SETTING_TYPE.E_YAML),

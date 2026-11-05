@@ -29,7 +29,7 @@ from functools import wraps
 # DONE: tijdelijk laptop lenen of nieuw in school en laptop lenen
 # DONE: tijdelijke laptop: in voorbereiding, uitgeleend, gesloten
 
-version = "0.146"
+version = "0.147"
 
 app = Flask(__name__, instance_relative_config=True, template_folder='presentation/template/')
 

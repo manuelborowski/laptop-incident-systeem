@@ -556,7 +556,10 @@ def warranty_message_default(incident_id):
         }
         for variable, recipient in replacements.items():
             template = template.replace(variable, str(recipient or ""))
-        return {"message_subject": state_config["label"], "message_content": template, "recipients": recipient_options}
+        message_subject = dl.settings.get_configuration_setting(f"{WARRANTY_INVOICE_APPROVED}_subject") if is_invoice else state_config["label"]
+        for variable, recipient in replacements.items():
+            message_subject = message_subject.replace(variable, str(recipient or ""))
+        return {"message_subject": message_subject, "message_content": template, "recipients": recipient_options}
     except Exception as e:
         log.error(f'{sys._getframe().f_code.co_name}: {e}')
         return {"status": "error", "msg": str(e)}
