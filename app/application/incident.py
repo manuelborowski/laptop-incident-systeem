@@ -1,3 +1,5 @@
+import csv
+from base64 import b64decode
 import sys, datetime, re, random, requests, wonderwords, io
 from app.application.m4s import m4s
 from app.warranty import (WARRANTY_NONE, WARRANTY_STATES, WARRANTY_MESSAGE_STATES, WARRANTY_INVOICE_APPROVED,
@@ -349,6 +351,47 @@ def laptop_get(data):
     except Exception as e:
         log.error(f'{sys._getframe().f_code.co_name}: {data}, {e}')
         raise
+
+def autopilot_add(content):
+    encoding = "utf-16" if content.startswith((b"\xff\xfe", b"\xfe\xff")) else "utf-8-sig"
+    columns = {"Device Serial Number": "serial_number", "Hardware Hash": "hardware_hash", "Group Tag": "group_tag"}
+    try:
+        reader = csv.reader(io.StringIO(content.decode(encoding), newline=""), strict=True)
+        headers = [header.strip() for header in next(reader, [])]
+        if any(headers.count(column) != 1 for column in columns):
+            return {"status": "error", "msg": "De CSV moet de kolommen Device Serial Number, Hardware Hash en Group Tag bevatten."}
+        rows = (row for row in reader if any(value.strip() for value in row))
+        row = next(rows, [])
+        if len(row) != len(headers) or next(rows, None) is not None:
+            return {"status": "error", "msg": "De CSV moet precies één volledige apparaatregel bevatten."}
+        payload = {field: row[headers.index(column)].strip() for column, field in columns.items()}
+    except (UnicodeError, csv.Error):
+        return {"status": "error", "msg": "Het CSV-bestand kan niet worden gelezen."}
+    if not all(payload.values()):
+        return {"status": "error", "msg": "Serienummer, hardwarehash en groepstag moeten ingevuld zijn."}
+    try:
+        b64decode(payload["hardware_hash"], validate=True)
+    except ValueError:
+        return {"status": "error", "msg": "De hardwarehash in de CSV is ongeldig."}
+
+    url = app.config.get("ENTRA_API_URL")
+    key = app.config.get("ENTRA_API_KEY")
+    if not url or not key:
+        log.error(f'{sys._getframe().f_code.co_name}: Entra API is not configured')
+        return {"status": "error", "msg": "De Entra-koppeling is niet geconfigureerd."}
+    serial_number = payload["serial_number"]
+    try:
+        response = requests.post(f"{url.rstrip('/')}/device/autopilot/add", headers={"X-Api-Key": key}, json=payload, timeout=30, allow_redirects=False)
+        if response.status_code == 200:
+            result = response.json()
+            if isinstance(result, dict) and result.get("status") is True:
+                log.info(f'{sys._getframe().f_code.co_name}: Autopilot import submitted for serial number {serial_number!r}')
+                return {"status": "ok", "msg": "De Autopilot-import is ingediend."}
+        log.error(f'{sys._getframe().f_code.co_name}: Entra did not confirm the Autopilot import for serial number {serial_number!r}, HTTP {response.status_code}')
+    except (requests.RequestException, ValueError) as e:
+        log.error(f'{sys._getframe().f_code.co_name}: Entra Autopilot request failed for serial number {serial_number!r}, {type(e).__name__}')
+        return {"status": "error", "msg": "De Autopilot-import kon niet worden bevestigd. Controleer de status in Autopilot."}
+    return {"status": "error", "msg": "Entra heeft de Autopilot-import niet geaccepteerd."}
 
 def incident_export(start_date, stop_date):
     try:

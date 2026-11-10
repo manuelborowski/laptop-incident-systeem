@@ -10,7 +10,7 @@ import json, sys, pathlib, datetime
 
 # logging on file level
 import logging
-from app import MyLogFilter, top_log_handle, app
+from app import MyLogFilter, top_log_handle, app, supervisor_required
 
 log = logging.getLogger(f"{top_log_handle}.{__name__}")
 log.addFilter(MyLogFilter())
@@ -63,6 +63,19 @@ def incident():
     except Exception as e:
         log.error(f'{sys._getframe().f_code.co_name}: {e}')
         return fetch_return_error()
+
+@bp_incident.route('/incident/autopilot', methods=['POST'])
+@login_required
+@supervisor_required
+def autopilot():
+    # Require a content type that cross-origin HTML forms cannot send.
+    if request.mimetype != "application/octet-stream":
+        return {"status": "error", "msg": "Selecteer een CSV-bestand."}, 415
+    max_size = 64 * 1024
+    content = request.stream.read(max_size + 1)
+    if len(content) > max_size:
+        return {"status": "error", "msg": "Het CSV-bestand mag maximaal 64 kB groot zijn."}, 413
+    return al.incident.autopilot_add(content)
 
 @bp_incident.route('/incident/attachment', methods=['POST', "GET", "DELETE", "UPDATE"])
 @login_required

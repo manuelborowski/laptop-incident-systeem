@@ -115,6 +115,46 @@ const __rollback_warranty_state = async pending => {
 
 const meta = await fetch_get("incident.meta")
 
+const __bind_autopilot = dialog => {
+    if (current_user.level < 3) return;
+    const row = dialog.find("#autopilot-row")[0];
+    const button = row.querySelector("#autopilot-button");
+    const input = row.querySelector("#autopilot-file");
+    const status = row.querySelector("#autopilot-status");
+    const info = dialog.find("#info-field")[0];
+    const save = dialog.find(".modal-footer .btn-primary")[0];
+    row.classList.remove("d-none");
+    button.addEventListener("click", () => input.click());
+    input.addEventListener("change", async () => {
+        const file = input.files[0];
+        input.value = "";
+        if (!file || button.disabled) return;
+        button.disabled = true;
+        const saveWasDisabled = save.disabled;
+        save.disabled = true;
+        status.textContent = "Autopilot-import wordt ingediend…";
+        try {
+            const response = await fetch(Flask.url_for("incident.autopilot"), {
+                method: "POST", headers: {"Content-Type": "application/octet-stream"}, body: file,
+            });
+            const result = await response.json();
+            if (typeof result?.msg !== "string") throw new Error("Missing Autopilot status");
+            status.textContent = result.msg;
+            if (result.status === "ok") {
+                const remark = "Autopilot-import ingediend.";
+                if (!info.value.split("\n").includes(remark)) {
+                    info.value += (info.value && !info.value.endsWith("\n") ? "\n" : "") + remark;
+                }
+            }
+        } catch {
+            status.textContent = "De Autopilot-import kon niet worden bevestigd. Controleer de status in Autopilot.";
+        } finally {
+            button.disabled = false;
+            save.disabled = saveWasDisabled;
+        }
+    });
+}
+
 const __repair_form = async (incident = null, history = "") => {
 
     let repair = null;
@@ -146,6 +186,7 @@ const __repair_form = async (incident = null, history = "") => {
             },
         });
 
+        __bind_autopilot(bootbox_dialog);
         // Confirm button pushed
         document.querySelector(".bootbox .btn-primary").addEventListener("click", async e => {
             if (saving) return;
@@ -319,6 +360,7 @@ const __gone_form = async (incident = null, history = "") => {
             },
         });
 
+        __bind_autopilot(bootbox_dialog);
         // Confirm button pushed
         document.querySelector(".bootbox .btn-primary").addEventListener("click", async e => {
             if (await gone.save()) {
