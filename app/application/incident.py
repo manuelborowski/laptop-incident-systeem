@@ -1,4 +1,4 @@
-import sys, datetime, re, random, requests, wonderwords, json, io
+import sys, datetime, re, random, requests, wonderwords, io
 from app.application.m4s import m4s
 from app.warranty import (WARRANTY_NONE, WARRANTY_STATES, WARRANTY_MESSAGE_STATES, WARRANTY_INVOICE_APPROVED,
                           WARRANTY_REPAIR_TO_BE_APPROVED, WARRANTY_REPAIR_APPROVED)
@@ -91,26 +91,54 @@ def __event(incident, event):
         raise e
 
 def __password_update(incident, password, must_update=False):
+    adp_url = app.config.get("ADP_URL")
+    entra_url = app.config.get("ENTRA_API_URL")
+    test = app.config.get("ADP_TEST", False)
+    if not adp_url and (not entra_url or test):
+        return True
+
     try:
-        adp_url = app.config["ADP_URL"]
-        if adp_url != "":
-            test = app.config["ADP_TEST"]
-            if incident.laptop_type == "leerling":
-                user = dl.student.get(("leerlingnummer", "=", incident.laptop_owner_id))
-                user_id = user.username
-            elif incident.laptop_type == "personeel":
-                user = dl.staff.get(("code", "=", incident.laptop_owner_id))
-                user_id = user.code
-            else:
-                return False
-            ret = requests.post(adp_url, json={"user": user_id, "password": password, "test": test})
-            if ret.status_code == 200:
-                resp = json.loads(ret.text)
-                log.info(f'{sys._getframe().f_code.co_name}: password of {user_id} set to {password}, must_update {must_update}, test {test}, resp {resp["status"]}')
+        if incident.laptop_type == "leerling":
+            user = dl.student.get(("leerlingnummer", "=", incident.laptop_owner_id))
+            user_id = user.username
+        elif incident.laptop_type == "personeel":
+            user = dl.staff.get(("code", "=", incident.laptop_owner_id))
+            user_id = user.code
+        else:
+            return False
     except Exception as e:
-        log.error(f'{sys._getframe().f_code.co_name}: {e}')
+        log.error(f'{sys._getframe().f_code.co_name}: owner lookup failed for incident {incident.id}, {type(e).__name__}')
         return False
-    return True
+
+    ad_ok = True
+    if adp_url:
+        try:
+            response = requests.post(adp_url, json={"user": user_id, "password": password, "test": test}, timeout=10)
+            ad_ok = response.status_code == 200 and response.json().get("status") is True
+            if ad_ok:
+                log.info(f'{sys._getframe().f_code.co_name}: AD password update succeeded for {user_id}, test {test}')
+            else:
+                log.error(f'{sys._getframe().f_code.co_name}: AD password update failed for {user_id}, HTTP {response.status_code}')
+        except Exception as e:
+            log.error(f'{sys._getframe().f_code.co_name}: AD password update failed for {user_id}, {type(e).__name__}')
+            ad_ok = False
+
+    if not entra_url or test:
+        return ad_ok
+
+    try:
+        url = f"{entra_url.rstrip('/')}/user/change_password"
+        headers = {"X-Api-Key": app.config["ENTRA_API_KEY"]}
+        payload = {"username": user_id, "password": password, "change_password_next_login": must_update}
+        response = requests.post(url, headers=headers, json=payload, timeout=10, allow_redirects=False)
+        if response.status_code != 200 or response.json().get("status") is not True:
+            log.error(f'{sys._getframe().f_code.co_name}: Entra password update failed for {user_id}, HTTP {response.status_code}')
+            return False
+        log.info(f'{sys._getframe().f_code.co_name}: Entra password update succeeded for {user_id}')
+    except Exception as e:
+        log.error(f'{sys._getframe().f_code.co_name}: Entra password update failed for {user_id}, {type(e).__name__}')
+        return False
+    return ad_ok
 
 def add(data):
     try:
@@ -255,7 +283,7 @@ def update(data):
                 history_data = {"incident_id": incident.id, "priority": incident.priority, "info": incident.info, "incident_type": incident.incident_type,
                                 "incident_state": incident.incident_state, "current_location": incident.current_location, "current_incident_owner": incident.current_incident_owner, "time": incident.time, }
                 history = dl.history.add(history_data)
-                if not current_laptop_owner_password_default and incident.laptop_owner_password_default:
+                if not current_laptop_owner_password_default and incident.laptop_owner_password_default and not (event == "closed" and incident.category == "repair"):
                     __password_update(incident, app.config["AD_DEFAULT_PASSWORD"])
                 log.info(f'{sys._getframe().f_code.co_name}: incident updated, {data}')
                 if incident.incident_type in ["hardware", "stolen"] and incident.m4s_guid is None:  # changed type from to hardware or stolen, put incident in M4S if not already in M4S

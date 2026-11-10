@@ -157,3 +157,4 @@
 0.145: Added a warranty page
 0.146: add waranty-cost
 0.147: approve invoice on Garanties page
+0.148: change-password, update in entra as well
